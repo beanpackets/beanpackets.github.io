@@ -1,0 +1,175 @@
+---
+import { SITE, LINKS } from '../data/site.js';
+import Icon from './Icon.astro';
+
+const sections = [
+  { href: '/#about', label: 'About' },
+  { href: '/#skills', label: 'Skills' },
+  { href: '/#work', label: 'Work' },
+  { href: '/#experience', label: 'Experience' },
+  { href: '/notes/', label: 'Lab notes' },
+  { href: '/#contact', label: 'Contact' },
+];
+---
+
+<header
+  id="site-nav"
+  class="fixed inset-x-0 top-0 z-40 border-b border-transparent transition-colors duration-300"
+  data-nav
+>
+  <div class="shell flex h-16 items-center justify-between gap-4">
+    <a
+      href="/"
+      class="font-mono text-sm font-medium tracking-tight text-text transition-colors hover:text-cyan"
+    >
+      <span class="text-cyan">$</span>&nbsp;{SITE.githubUser}
+    </a>
+
+    <nav aria-label="Primary" class="hidden items-center gap-7 md:flex">
+      {
+        sections.map((s) => (
+          <a href={s.href} class="link-underline text-sm text-muted transition-colors hover:text-text">
+            {s.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="flex items-center gap-1">
+      <a
+        href={LINKS.github}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="rounded-lg p-2 text-muted transition-colors hover:bg-surface hover:text-cyan"
+        aria-label="GitHub profile (opens in a new tab)"
+      >
+        <Icon name="github" class="h-[18px] w-[18px]" />
+      </a>
+      <a
+        href={LINKS.linkedin}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="rounded-lg p-2 text-muted transition-colors hover:bg-surface hover:text-cyan"
+        aria-label="LinkedIn profile (opens in a new tab)"
+      >
+        <Icon name="linkedin" class="h-[18px] w-[18px]" />
+      </a>
+      <a
+        href={SITE.resumeFile}
+        class="ml-1 hidden rounded-lg border border-edge bg-surface px-3.5 py-1.5 text-sm font-medium text-text transition-colors hover:border-cyan/50 hover:text-cyan sm:inline-block"
+      >
+        Résumé
+      </a>
+
+      <!-- Mobile disclosure. Rendered as a real <button> so it is keyboard
+           operable; the panel is plain markup that works without JS styling. -->
+      <button
+        type="button"
+        data-menu-toggle
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        aria-label="Open menu"
+        class="ml-1 rounded-lg p-2 text-muted transition-colors hover:bg-surface hover:text-cyan md:hidden"
+      >
+        <svg
+          class="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path data-menu-open d="M4 7h16M4 12h16M4 17h16"></path>
+          <path data-menu-close class="hidden" d="M6 6l12 12M18 6L6 18"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div
+    id="mobile-menu"
+    data-menu-panel
+    hidden
+    class="glass border-t border-edge md:hidden"
+  >
+    <nav aria-label="Mobile" class="shell flex flex-col py-3">
+      {
+        sections.map((s) => (
+          <a
+            href={s.href}
+            class="rounded-lg px-2 py-2.5 text-sm text-muted transition-colors hover:bg-surface hover:text-cyan"
+          >
+            {s.label}
+          </a>
+        ))
+      }
+      <button
+        type="button"
+        data-terminal-open
+        class="rounded-lg px-2 py-2.5 text-left font-mono text-sm text-muted transition-colors hover:bg-surface hover:text-cyan"
+      >
+        <span class="text-cyan">$</span> terminal
+      </button>
+      <a
+        href={SITE.resumeFile}
+        class="mt-2 rounded-lg border border-edge bg-surface px-3 py-2.5 text-center text-sm font-medium text-text transition-colors hover:border-cyan/50 hover:text-cyan"
+      >
+        Download résumé
+      </a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const nav = document.querySelector<HTMLElement>('[data-nav]');
+
+  // Frost the nav bar once the hero starts scrolling past.
+  if (nav) {
+    const solid = ['glass', 'border-edge!'];
+    const sync = () => {
+      const on = window.scrollY > 24;
+      for (const c of solid) nav.classList.toggle(c, on);
+    };
+    sync();
+    window.addEventListener('scroll', sync, { passive: true });
+  }
+
+  // Mobile menu disclosure.
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const panel = document.querySelector<HTMLElement>('[data-menu-panel]');
+  const iconOpen = document.querySelector<SVGPathElement>('[data-menu-open]');
+  const iconClose = document.querySelector<SVGPathElement>('[data-menu-close]');
+
+  if (toggle && panel) {
+    const setOpen = (open: boolean) => {
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      iconOpen?.classList.toggle('hidden', open);
+      iconClose?.classList.toggle('hidden', !open);
+    };
+
+    toggle.addEventListener('click', () => {
+      setOpen(panel.hidden);
+    });
+
+    // Any navigation choice closes the menu.
+    panel.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) setOpen(false);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+
+    // Leaving mobile width should never strand the panel open.
+    const mq = window.matchMedia('(min-width: 768px)');
+    mq.addEventListener('change', (e) => {
+      if (e.matches) setOpen(false);
+    });
+  }
+</script>

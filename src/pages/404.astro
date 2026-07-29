@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import Icon from '../components/Icon.astro';
+---
+
+<BaseLayout title="404 destination host unreachable" description="That page could not be found.">
+  <Nav />
+
+  <main id="main" class="shell flex min-h-[70svh] flex-col items-center justify-center py-24 text-center">
+    <p class="font-mono text-sm text-cyan">ICMP type 3, code 1</p>
+
+    <h1 class="mt-5 text-5xl font-semibold sm:text-6xl">404</h1>
+    <p class="mt-4 font-display text-xl text-text/90 sm:text-2xl">Destination host unreachable</p>
+
+    <p class="mt-4 max-w-md text-sm leading-relaxed text-muted sm:text-base">
+      The request routed fine. There's just nothing listening at this path. Probably a stale link.
+    </p>
+
+    <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 rounded-xl bg-cyan px-5 py-3 text-sm font-semibold text-ink transition-all hover:bg-cyan/90 hover:shadow-[0_0_28px_-6px_var(--color-cyan)]"
+      >
+        <Icon name="arrow" class="h-4 w-4 rotate-180" />
+        Back to the homepage
+      </a>
+      <a
+        href="/notes/"
+        class="inline-flex items-center gap-2 rounded-xl border border-edge-bright bg-surface/60 px-5 py-3 text-sm font-medium text-text transition-colors hover:border-cyan/60 hover:text-cyan"
+      >
+        Lab notes
+      </a>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

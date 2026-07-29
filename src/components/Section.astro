@@ -1,0 +1,41 @@
+---
+interface Props {
+  id: string;
+  title: string;
+  eyebrow?: string;
+  lead?: string;
+  tone?: string;
+  /* stack = eyebrow over title; split = title left, lead right; bare = title only */
+  variant?: 'stack' | 'split' | 'bare';
+  class?: string;
+}
+
+const { id, title, eyebrow, lead, tone = 'cyan', variant = 'stack', class: className = '' } = Astro.props;
+---
+
+<section id={id} data-tone={tone} class={`shell scroll-mt-24 py-20 sm:py-28 ${className}`}>
+  {
+    variant === 'split' ? (
+      <header class="mb-12 grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:items-end md:gap-12" data-reveal-target>
+        <div>
+          {eyebrow && <p class="eyebrow mb-3">{eyebrow}</p>}
+          <h2 class="text-3xl font-semibold sm:text-4xl">{title}</h2>
+        </div>
+        {lead && <p class="text-base leading-relaxed text-muted md:pb-1">{lead}</p>}
+      </header>
+    ) : variant === 'bare' ? (
+      <header class="mb-10 flex items-baseline gap-4" data-reveal-target>
+        <h2 class="text-3xl font-semibold sm:text-4xl">{title}</h2>
+        {eyebrow && <span class="font-mono text-xs text-muted">{eyebrow}</span>}
+      </header>
+    ) : (
+      <header class="mb-12 max-w-2xl" data-reveal-target>
+        {eyebrow && <p class="eyebrow mb-3">{eyebrow}</p>}
+        <h2 class="text-3xl font-semibold sm:text-4xl">{title}</h2>
+        {lead && <p class="mt-4 text-base leading-relaxed text-muted sm:text-lg">{lead}</p>}
+      </header>
+    )
+  }
+
+  <slot />
+</section>

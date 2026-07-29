@@ -1,0 +1,32 @@
+version: 2
+
+updates:
+  # npm: security patches arrive automatically, version bumps
+  # arrive as PRs so the site doesn't quietly rot between job applications.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      astro:
+        patterns:
+          - 'astro'
+          - '@astrojs/*'
+      tailwind:
+        patterns:
+          - 'tailwindcss'
+          - '@tailwindcss/*'
+      fonts:
+        patterns:
+          - '@fontsource-variable/*'
+
+  # Keeps the SHA-pinned actions in deploy.yml current. Dependabot rewrites the
+  # pin to the new SHA and updates the version comment.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5

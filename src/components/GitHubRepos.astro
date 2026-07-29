@@ -1,0 +1,229 @@
+---
+import Section from './Section.astro';
+import Icon from './Icon.astro';
+import { SITE, LINKS } from '../data/site.js';
+
+/**
+ * Repositories are fetched twice, deliberately:
+ *
+ *  1. At build time (below) so the section ships with real, indexable content
+ *     and still renders with JavaScript disabled.
+ *  2. In the browser (script at the bottom) so the list stays current between
+ *     deploys.
+ *
+ * Both calls are unauthenticated. There is no token in this repository and
+ * there never should be. If the anon rate limit is hit, the baked-in
+ * build-time list is the answer, not a credential.
+ */
+type Repo = {
+  name: string;
+  description: string | null;
+  html_url: string;
+  language: string | null;
+  stargazers_count: number;
+  fork: boolean;
+};
+
+let repos: Repo[] = [];
+/* ok = found repos, empty = account has none yet, error = API unreachable */
+let status: 'ok' | 'empty' | 'error' = 'empty';
+
+try {
+  const res = await fetch(
+    `https://api.github.com/users/${SITE.githubUser}/repos?sort=updated&per_page=12`,
+    { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'beanpackets-portfolio' } }
+  );
+  if (res.ok) {
+    const data = (await res.json()) as Repo[];
+    repos = data.filter((r) => !r.fork).slice(0, 6);
+    status = repos.length > 0 ? 'ok' : 'empty';
+  } else {
+    status = 'error';
+    console.warn(`[github] API returned ${res.status}; rendering fallback panel.`);
+  }
+} catch (err) {
+  status = 'error';
+  console.warn('[github] fetch failed at build time; rendering fallback panel.', err);
+}
+
+const langColors: Record<string, string> = {
+  Astro: '#ff5d01',
+  JavaScript: '#f1e05a',
+  TypeScript: '#3178c6',
+  Python: '#3572a5',
+  HTML: '#e34c26',
+  CSS: '#563d7c',
+  Shell: '#89e051',
+  PowerShell: '#012456',
+};
+---
+
+<Section
+  id="github"
+  eyebrow={`gh repo list ${SITE.githubUser}`}
+  title="On GitHub"
+  lead="Public repositories, pulled live from the GitHub API."
+>
+  <div data-repo-root data-user={SITE.githubUser}>
+    {
+      repos.length > 0 ? (
+        <ul data-repo-list class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {repos.map((r) => (
+            <li class="panel p-5">
+              <a
+                href={r.html_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="group flex h-full flex-col"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <h3 class="font-mono text-sm font-medium break-all text-text transition-colors group-hover:text-cyan">
+                    {r.name}
+                  </h3>
+                  <Icon
+                    name="external"
+                    class="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted transition-colors group-hover:text-cyan"
+                  />
+                </div>
+                <p class="mt-2.5 flex-1 text-sm leading-relaxed text-muted">
+                  {r.description ?? 'No description provided.'}
+                </p>
+                <div class="mt-4 flex items-center gap-4 font-mono text-xs text-muted">
+                  {r.language && (
+                    <span class="inline-flex items-center gap-1.5">
+                      <span
+                        class="inline-block h-2 w-2 rounded-full"
+                        style={`background:${langColors[r.language] ?? '#8b98ab'}`}
+                      />
+                      {r.language}
+                    </span>
+                  )}
+                  {r.stargazers_count > 0 && (
+                    <span class="inline-flex items-center gap-1">
+                      <Icon name="star" class="h-3 w-3" />
+                      {r.stargazers_count}
+                    </span>
+                  )}
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="panel p-8 text-center sm:p-10">
+          <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-edge bg-ink/60 text-cyan">
+            <Icon name="github" class="h-5 w-5" />
+          </span>
+          <p class="mx-auto mt-5 max-w-md text-sm leading-relaxed text-muted">
+            {
+              status === 'error'
+                ? "The GitHub API was unreachable when this page was built. Current list is on my profile."
+                : 'Repositories will appear here as I publish them. The source for this site is the first one.'
+            }
+          </p>
+          <a
+            href={LINKS.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="link-underline mt-4 inline-flex items-center gap-2 text-sm font-medium text-cyan"
+          >
+            github.com/{SITE.githubUser}
+            <Icon name="external" class="h-3.5 w-3.5" />
+          </a>
+        </div>
+      )
+    }
+  </div>
+</Section>
+
+<script>
+  /**
+   * Refresh the repo list in the browser so it stays current between deploys.
+   * Values from the API go in via textContent and setAttribute, never
+   * innerHTML, so a repo name or description can't inject markup.
+   */
+  const root = document.querySelector<HTMLElement>('[data-repo-root]');
+  const list = root?.querySelector<HTMLUListElement>('[data-repo-list]');
+  const user = root?.dataset.user;
+
+  if (root && list && user) {
+    const LANGS: Record<string, string> = {
+      Astro: '#ff5d01',
+      JavaScript: '#f1e05a',
+      TypeScript: '#3178c6',
+      Python: '#3572a5',
+      HTML: '#e34c26',
+      CSS: '#563d7c',
+      Shell: '#89e051',
+      PowerShell: '#012456',
+    };
+
+    const el = (tag: string, cls?: string, text?: string) => {
+      const node = document.createElement(tag);
+      if (cls) node.className = cls;
+      if (text != null) node.textContent = text;
+      return node;
+    };
+
+    (async () => {
+      try {
+        const res = await fetch(
+          `https://api.github.com/users/${encodeURIComponent(user)}/repos?sort=updated&per_page=12`,
+          { headers: { Accept: 'application/vnd.github+json' } }
+        );
+        if (!res.ok) return; // keep the build-time list
+
+        const repos = (await res.json())
+          .filter((r: any) => !r.fork)
+          .slice(0, 6);
+
+        if (!Array.isArray(repos) || repos.length === 0) return;
+
+        const frag = document.createDocumentFragment();
+
+        for (const r of repos) {
+          const li = el('li', 'panel p-5');
+          const a = el('a', 'group flex h-full flex-col') as HTMLAnchorElement;
+          a.href = String(r.html_url ?? '#');
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+
+          const head = el('div', 'flex items-start justify-between gap-3');
+          head.append(
+            el(
+              'h3',
+              'font-mono text-sm font-medium break-all text-text transition-colors group-hover:text-cyan',
+              String(r.name ?? '')
+            )
+          );
+
+          const desc = el(
+            'p',
+            'mt-2.5 flex-1 text-sm leading-relaxed text-muted',
+            r.description ? String(r.description) : 'No description provided.'
+          );
+
+          const meta = el('div', 'mt-4 flex items-center gap-4 font-mono text-xs text-muted');
+          if (r.language) {
+            const wrap = el('span', 'inline-flex items-center gap-1.5');
+            const dot = el('span', 'inline-block h-2 w-2 rounded-full');
+            dot.setAttribute('style', `background:${LANGS[r.language] ?? '#8b98ab'}`);
+            wrap.append(dot, document.createTextNode(String(r.language)));
+            meta.append(wrap);
+          }
+          if (Number(r.stargazers_count) > 0) {
+            meta.append(el('span', '', `★ ${Number(r.stargazers_count)}`));
+          }
+
+          a.append(head, desc, meta);
+          li.append(a);
+          frag.append(li);
+        }
+
+        list.replaceChildren(frag);
+      } catch {
+        // Offline, blocked, or rate-limited. Build-time list stands.
+      }
+    })();
+  }
+</script>

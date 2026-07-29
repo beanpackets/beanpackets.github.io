@@ -1,0 +1,35 @@
+---
+import Section from './Section.astro';
+import Icon from './Icon.astro';
+import { CERTIFICATIONS } from '../data/resume.js';
+---
+
+<Section id="certifications" variant="bare" tone="cyan" title="Training" eyebrow="certs">
+  <!-- CCNA full width, the three finished certs 3-across -->
+  <ul class="grid gap-3 sm:grid-cols-3">
+    {
+      CERTIFICATIONS.map((c) => {
+        const active = c.status === 'in-progress';
+        return (
+          <li
+            data-tone={c.tone}
+            data-reveal-target
+            class={`panel-flat tone-rule flex items-start gap-3.5 p-5 ${active ? 'sm:col-span-3' : ''}`}
+          >
+            <span class="tone-text mt-0.5">
+              <Icon name={active ? 'clock' : 'check'} class="h-[18px] w-[18px]" />
+            </span>
+
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <h3 class="text-[0.95rem] font-medium text-text">{c.name}</h3>
+                {active && <span class="chip">in progress</span>}
+              </div>
+              <p class="mt-1 text-sm text-muted">{c.detail}</p>
+            </div>
+          </li>
+        );
+      })
+    }
+  </ul>
+</Section>

@@ -1,0 +1,34 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# secrets and environment. Nothing secret should ever exist here;
+# this is belt-and-braces so an accidental file can never be committed
+.env
+.env.*
+*.pem
+*.key
+
+# resume build intermediates. Only the built PDF ships
+resume-src/*.aux
+resume-src/*.log
+resume-src/*.out
+resume-src/*.synctex.gz
+resume-src/resume.pdf
+
+# PRIVATE resume copy (has phone and ZIP). Reference only.
+# The PUBLIC copy is built from resume-src/resume.tex into public/ and is the
+# only résumé that may ever be committed. Do not remove this rule.
+/Matthew_Bean_Resume.pdf
+
+# editor / OS / local tooling
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*~

@@ -1,0 +1,53 @@
+---
+import Section from './Section.astro';
+import Icon from './Icon.astro';
+import { ABOUT, EDUCATION } from '../data/resume.js';
+import { SITE } from '../data/site.js';
+
+const facts = [
+  { icon: 'location', label: 'Based in', value: SITE.location, tone: 'blue' },
+  { icon: 'clock', label: 'Availability', value: 'Full-time, on-site', tone: 'green' },
+  { icon: 'book', label: 'Studying', value: 'Cisco CCNA', tone: 'cyan' },
+];
+---
+
+<Section id="about" tone="magenta" eyebrow="whoami" title="About">
+  <div class="grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-16">
+    <div class="space-y-5" data-reveal-target>
+      {ABOUT.map((para) => <p class="leading-relaxed text-muted sm:text-[1.0625rem]">{para}</p>)}
+    </div>
+
+    <div class="space-y-3" data-reveal-target>
+      <ul class="space-y-3">
+        {
+          facts.map((f) => (
+            <li data-tone={f.tone} class="panel-flat tone-rule flex items-center gap-3 px-4 py-3">
+              <span class="tone-text">
+                <Icon name={f.icon} class="h-[18px] w-[18px]" />
+              </span>
+              <div>
+                <p class="font-mono text-[0.65rem] tracking-wider text-muted uppercase">{f.label}</p>
+                <p class="text-sm text-text">{f.value}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="panel-flat p-5">
+        <h3 class="font-mono text-[0.65rem] tracking-wider text-muted uppercase">Education</h3>
+        <ul class="mt-3 space-y-3">
+          {
+            EDUCATION.map((e) => (
+              <li>
+                <p class="text-sm font-medium text-text">{e.school}</p>
+                <p class="text-sm text-muted">{e.detail}</p>
+                <p class="font-mono text-xs text-muted/70">{e.period}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</Section>

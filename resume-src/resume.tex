@@ -1,0 +1,186 @@
+% =====================================================================
+%  Matthew Bean resume, web edition
+%
+%  This is the PUBLIC copy that ships on the portfolio site. It is
+%  content-identical to the private résumé with two deliberate omissions:
+%    * no phone number
+%    * no ZIP code (city + state only)
+%  Recruiters who need the phone number get it by email.
+%
+%  Single column, standard headings, selectable text, no tables or
+%  text boxes. Deliberately ATS-parseable.
+%
+%  Build:  pdflatex -interaction=nonstopmode resume.tex
+% =====================================================================
+\documentclass[letterpaper,10.5pt]{article}
+
+% Reproducible output: no build timestamp, no random trailer ID.
+\pdfinfoomitdate=1
+\pdftrailerid{}
+\pdfsuppressptexinfo=-1
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=0.62in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+
+\hypersetup{
+  pdftitle={Matthew Bean - Resume},
+  pdfauthor={Matthew Bean},
+  pdfsubject={IT Support and Network Professional},
+  pdfkeywords={IT Support, Help Desk, Networking, CCNA, Active Directory, Salesforce},
+  pdfcreator={},
+  pdfproducer={}
+}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+\titleformat{\section}{\large\bfseries}{}{0pt}{}[\vspace{-7pt}\rule{\textwidth}{0.6pt}]
+\titlespacing*{\section}{0pt}{11pt}{6pt}
+
+\setlist[itemize]{leftmargin=13pt, itemsep=1.5pt, topsep=3pt, parsep=0pt}
+
+% Job heading: employer/location on the left, dates flush right.
+\newcommand{\role}[3]{%
+  \vspace{3pt}%
+  \textbf{#1} \hfill {\small #3}\\[1pt]%
+  {\small\itshape #2}\vspace{-2pt}%
+}
+
+\begin{document}
+
+% ------------------------------------------------ header
+\begin{center}
+  {\LARGE\bfseries MATTHEW BEAN}\\[5pt]
+  {\small
+    San Diego, CA \ \textbullet\ \
+    \href{mailto:bean.packets@gmail.com}{bean.packets@gmail.com} \ \textbullet\ \
+    \href{https://github.com/beanpackets}{github.com/beanpackets} \ \textbullet\ \
+    \href{https://www.linkedin.com/in/beanpackets}{linkedin.com/in/beanpackets}
+  }
+\end{center}
+\vspace{2pt}
+
+% ------------------------------------------------ summary
+\section*{Summary}
+IT support professional with hands-on experience running help desk operations, administering a
+cloud-based CRM platform, and troubleshooting hardware, account, application, and connectivity
+issues for end users. Comfortable with practical hardware work, including PC builds,
+component-level diagnostics and repair, and peripheral and workstation setup, alongside ticketing,
+triage, and escalation. Studying for CCNA certification, with completed Microsoft Learn training in
+Active Directory Domain Services and Azure Virtual Desktop deployment and monitoring; open to
+pursuing CompTIA A+ as well if the role calls for it. Clear communicator who knows when to resolve
+directly and when to escalate to Tier 2/3 or engineering. Based in San Diego and available
+full-time, on-site.
+
+% ------------------------------------------------ skills
+\section*{Technical Skills}
+\begin{itemize}
+  \item \textbf{Systems \& Infrastructure:} Windows 10/11 desktop administration and
+        troubleshooting; Active Directory fundamentals (Microsoft Learn: Active Directory Domain
+        Services); Azure Virtual Desktop \& Windows 365 (Microsoft Learn: deployment and
+        infrastructure monitoring); Linux fundamentals (home server administration); basic
+        virtualization concepts
+  \item \textbf{Hardware \& Physical Support:} PC building and component upgrades (RAM, storage,
+        GPU); hardware diagnostics and repair, including boot/POST troubleshooting; printer,
+        monitor, and peripheral installation and setup
+  \item \textbf{Networking (studying for CCNA):} IP addressing \& subnetting, routing \& switching
+        fundamentals, VLANs, DNS/DHCP, VPN configuration, basic network security concepts;
+        troubleshooting connectivity, DNS, and access issues
+  \item \textbf{Platforms \& Tools:} Salesforce CRM (configuration, records management,
+        automation), GitHub Issues \& Git version control, Google Workspace, join.me; adaptable to
+        Microsoft Office and Adobe Acrobat workflows
+  \item \textbf{Core Competencies:} Help desk \& ticketing operations, technical troubleshooting \&
+        escalation, SLA management, bug reproduction \& documentation, system/status monitoring,
+        client communication
+\end{itemize}
+
+% ------------------------------------------------ certs
+\section*{Training \& Certifications}
+\begin{itemize}
+  \item CCNA --- in progress
+  \item CompTIA A+ --- open to pursuing if required for the role
+  \item Microsoft Learn: Active Directory Domain Services --- completed
+  \item Microsoft Learn: Deliver Cloud-Hosted Desktops Using Azure Virtual Desktop and
+        Windows 365 --- completed
+  \item Microsoft Learn: Monitor and Maintain an Azure Virtual Desktop Infrastructure --- completed
+\end{itemize}
+
+% ------------------------------------------------ experience
+\section*{Professional Experience}
+
+\role{JoyPunk LLC, Long Beach, CA}{HelpDesk Support Technician}{October 2025 -- Present}
+\begin{itemize}
+  \item First point of contact for support tickets, emails, chats, and calls covering the company
+        website and SaaS applications
+  \item Triage, log, and prioritize tickets in GitHub Issues, keeping response and resolution times
+        within SLA
+  \item Troubleshoot login, account, permissions, and connectivity issues across web and SaaS
+        platforms, including SSO and password resets
+  \item Walk users through browser, cache/cookie, and network troubleshooting steps to resolve
+        access issues without a full escalation
+  \item Diagnose website issues (broken links, page errors, form failures, slow load times) and
+        support SaaS functionality, configuration, and integration problems
+  \item Reproduce reported bugs and write detailed steps-to-reproduce; escalate anything beyond
+        Tier 1 to Tier 2/3, engineering, or product with clear documentation
+  \item Monitor system status dashboards and proactively communicate known outages or incidents to
+        users
+  \item Maintain internal knowledge base articles, FAQs, and troubleshooting guides; track
+        recurring issues to help spot root causes
+\end{itemize}
+
+\role{Rainbow Financial Group}{Technical Support Specialist}{01/2019 -- 10/2025}
+\begin{itemize}
+  \item Administered Salesforce CRM platform: configured custom fields, created automated actions,
+        and managed agent data records to support onboarding and ongoing operations
+  \item Managed the full insurance agent licensing and credentialing lifecycle: collecting,
+        validating, and tracking carrier-required documentation from submission through approval
+  \item Identified, diagnosed, and resolved platform issues; escalated complex technical matters to
+        Salesforce support and coordinated resolution with internal stakeholders
+  \item Audited agent records and paperwork on an ongoing basis to ensure compliance with evolving
+        carrier requirements and internal standards
+  \item Facilitated and led internal meetings via join.me to communicate platform updates,
+        procedural changes, and carrier requirements to agents
+  \item Served as primary resource for agents navigating platform functions, licensing processes,
+        and carrier requirements, fielding calls and resolving issues directly
+\end{itemize}
+
+\role{Tops}{Full Service Delivery}{08/2016 -- 01/2019}
+\begin{itemize}
+  \item Interfaced directly with clients in-home; recommended products tailored to individual needs
+        and specifications
+  \item Managed inventory and order fulfillment using shared Google Sheets and email; coordinated
+        routes to meet 15-minute ETA deadlines
+  \item Handled weekly cash drops and communicated inventory needs with partners and dispatch
+\end{itemize}
+
+\role{Whole Foods Market}{Cashier}{07/2015 -- 08/2016}
+\begin{itemize}
+  \item Processed cash, credit, debit, and check transactions with accuracy; created end-of-shift
+        cash reports
+  \item Resolved customer issues and returns; verified ID for age-restricted alcohol sales
+\end{itemize}
+
+% ------------------------------------------------ home lab
+\section*{Home Lab \& Hardware Projects}
+\begin{itemize}
+  \item Built and upgraded multiple PCs, including component installation/replacement and
+        troubleshooting boot/POST failures
+  \item Designed and maintain a home server environment: DNS filtering, VPN configuration, and
+        uptime monitoring
+  \item Installed and configured printers, monitors, and other peripherals across personal and
+        family systems
+\end{itemize}
+
+% ------------------------------------------------ education
+\section*{Education}
+\begin{itemize}[label={}]
+  \item Browning Academy --- La Verkin, UT --- High School Diploma --- June 2006
+  \item Saddleback College --- Mission Viejo, CA --- Major in Photography --- Aug 2006 -- Dec 2007
+\end{itemize}
+
+\end{document}

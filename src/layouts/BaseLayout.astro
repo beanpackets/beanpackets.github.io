@@ -1,0 +1,175 @@
+---
+import { SITE, LINKS, ANALYTICS } from '../data/site.js';
+import Terminal from '../components/Terminal.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Path-only canonical override, e.g. "/notes/". Defaults to current URL. */
+  path?: string;
+  /** Emit Person JSON-LD (homepage only). */
+  person?: boolean;
+}
+
+const { title, description = SITE.description, path, person = false } = Astro.props;
+
+const pageTitle = title ? `${title} | ${SITE.name}` : SITE.title;
+const canonical = new URL(path ?? Astro.url.pathname, SITE.url).href;
+const ogImage = new URL('/og.png', SITE.url).href;
+
+/* CSP goes in a meta tag because GH Pages can't set headers. Prod only; the
+   dev server needs inline scripts for HMR. frame-ancestors is header-only so
+   it's unavailable here (see README). */
+const gc = ANALYTICS.code;
+const csp = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "form-action 'none'",
+  "img-src 'self' data:",
+  "font-src 'self'",
+  "style-src 'self'",
+  `script-src 'self'${gc ? ' https://gc.zgo.at' : ''}`,
+  `connect-src 'self' https://api.github.com${gc ? ' https://' + gc + '.goatcounter.com' : ''}`,
+  'upgrade-insecure-requests',
+].join('; ');
+
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: SITE.name,
+  jobTitle: SITE.role,
+  description: SITE.description,
+  email: SITE.email,
+  url: SITE.url,
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'San Diego',
+    addressRegion: 'CA',
+    addressCountry: 'US',
+  },
+  sameAs: [LINKS.github, LINKS.linkedin],
+  knowsAbout: [
+    'IT Support',
+    'Help Desk Operations',
+    'Computer Networking',
+    'Active Directory',
+    'Azure Virtual Desktop',
+    'Salesforce Administration',
+    'Hardware Troubleshooting',
+  ],
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {import.meta.env.PROD && <meta http-equiv="Content-Security-Policy" content={csp} />}
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0a0d14" />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={SITE.name} />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.name} lab notes`} href="/rss.xml" />
+
+    {person && <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />}
+    {gc && <script data-goatcounter={`https://${gc}.goatcounter.com/count`} async src="https://gc.zgo.at/count.js"></script>}
+  </head>
+
+  <body class="grain min-h-screen">
+    <div class="progress-rail" data-progress aria-hidden="true"></div>
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:z-50 focus:top-4 focus:left-4 focus:rounded-lg focus:bg-cyan focus:px-4 focus:py-2 focus:font-medium focus:text-ink"
+    >
+      Skip to content
+    </a>
+    <slot />
+    <Terminal />
+
+    <script>
+      // Reveal-on-scroll. Opt-in only, so nothing hides if this never runs.
+      const motionOK = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (motionOK && 'IntersectionObserver' in window) {
+        const targets = document.querySelectorAll<HTMLElement>('[data-reveal-target]');
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                io.unobserve(entry.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.05 }
+        );
+
+        for (const el of targets) {
+          el.setAttribute('data-reveal', '');
+          io.observe(el);
+        }
+      }
+
+      // Progress rail. Transform not width, and one layout read per frame.
+      const rail = document.querySelector<HTMLElement>('[data-progress]');
+      if (rail) {
+        let ticking = false;
+        const update = () => {
+          const max = document.documentElement.scrollHeight - window.innerHeight;
+          const pct = max > 0 ? Math.min(window.scrollY / max, 1) : 0;
+          rail.style.transform = `scaleX(${pct})`;
+          ticking = false;
+        };
+        window.addEventListener(
+          'scroll',
+          () => {
+            if (!ticking) {
+              ticking = true;
+              requestAnimationFrame(update);
+            }
+          },
+          { passive: true }
+        );
+        update();
+      }
+
+      // Cursor spotlight. One delegated listener, writes CSS vars only.
+      // Pointless on touch, so skip it there.
+      const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+      if (finePointer && motionOK) {
+        document.addEventListener(
+          'pointermove',
+          (e) => {
+            const card = (e.target as HTMLElement)?.closest?.<HTMLElement>('.panel');
+            if (!card) return;
+            const r = card.getBoundingClientRect();
+            card.style.setProperty('--mx', `${e.clientX - r.left}px`);
+            card.style.setProperty('--my', `${e.clientY - r.top}px`);
+          },
+          { passive: true }
+        );
+      }
+    </script>
+  </body>
+</html>

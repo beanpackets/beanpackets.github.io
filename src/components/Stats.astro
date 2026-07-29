@@ -1,0 +1,24 @@
+---
+import { STATS } from '../data/resume.js';
+---
+
+<section aria-label="At a glance" class="border-y border-edge bg-surface/40">
+  <div class="shell grid grid-cols-2 sm:grid-cols-4">
+    {
+      STATS.map((s, i) => (
+        <div
+          data-tone={s.tone}
+          class={`px-2 py-7 sm:px-6 sm:py-8 ${i < 2 ? 'border-b border-edge sm:border-b-0' : ''} ${
+            i % 2 === 1 ? 'border-l border-edge' : ''
+          } ${i === 2 ? 'sm:border-l sm:border-edge' : ''}`}
+        >
+          <p class="font-display text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl">
+            <span class="tone-text">{s.value}</span>
+            {s.unit && <span class="ml-1 text-base font-normal text-muted">{s.unit}</span>}
+          </p>
+          <p class="mt-1.5 font-mono text-[0.68rem] tracking-wider text-muted uppercase">{s.label}</p>
+        </div>
+      ))
+    }
+  </div>
+</section>

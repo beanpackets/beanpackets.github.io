@@ -1,0 +1,27 @@
+---
+import { SITE, LINKS } from '../data/site.js';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-edge">
+  <div class="shell flex flex-col items-center justify-between gap-4 py-8 sm:flex-row">
+    <p class="font-mono text-xs text-muted">
+      © {year} {SITE.name}, {SITE.location}
+    </p>
+
+    <div class="flex items-center gap-5 text-xs text-muted">
+      <button type="button" data-terminal-open class="link-underline font-mono hover:text-cyan">
+        $ terminal
+      </button>
+      <a href={LINKS.github} target="_blank" rel="noopener noreferrer" class="link-underline hover:text-cyan">
+        GitHub
+      </a>
+      <a href={LINKS.linkedin} target="_blank" rel="noopener noreferrer" class="link-underline hover:text-cyan">
+        LinkedIn
+      </a>
+      <a href="/notes/" class="link-underline hover:text-cyan">Lab notes</a>
+      <a href="/rss.xml" class="link-underline hover:text-cyan">RSS</a>
+    </div>
+  </div>
+</footer>

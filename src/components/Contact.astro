@@ -1,0 +1,89 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import heroArt from '../assets/hero-network.png';
+import { SITE, LINKS } from '../data/site.js';
+
+const channels = [
+  { icon: 'mail', label: 'Email', value: SITE.email, href: LINKS.email },
+  { icon: 'github', label: 'GitHub', value: `github.com/${SITE.githubUser}`, href: LINKS.github, external: true },
+  { icon: 'linkedin', label: 'LinkedIn', value: `in/${SITE.githubUser}`, href: LINKS.linkedin, external: true },
+];
+---
+
+<section id="contact" class="shell scroll-mt-24 py-20 sm:py-28">
+  <div class="panel elevate relative overflow-hidden p-8 sm:p-12" data-reveal-target>
+    <!-- Reuses the hero artwork so the page closes on the same visual note it
+         opens with. Heavily darkened; decorative only. -->
+    <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+      <Image
+        src={heroArt}
+        alt=""
+        widths={[700, 1100]}
+        sizes="100vw"
+        quality={60}
+        loading="lazy"
+        class="h-full w-full object-cover object-right opacity-[0.18]"
+      />
+      <div
+        class="absolute inset-0 bg-[linear-gradient(95deg,var(--color-surface)_28%,color-mix(in_oklab,var(--color-surface)_86%,transparent)_62%,transparent_100%)]"
+      >
+      </div>
+    </div>
+
+    <div
+      class="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-cyan/10 blur-3xl"
+      aria-hidden="true"
+    >
+    </div>
+
+    <div class="relative grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+      <div>
+        <p class="eyebrow mb-3"><span class="text-muted">$</span> contact</p>
+        <h2 class="text-3xl font-semibold sm:text-4xl">Let's talk</h2>
+        <p class="mt-4 max-w-md text-base leading-relaxed text-muted">
+          I'm looking for a full-time IT support, desktop support, or junior network role in
+          San Diego. If you've got an opening, I'd like to hear about it.
+        </p>
+
+        <a
+          href={SITE.resumeFile}
+          class="mt-7 inline-flex items-center gap-2 rounded-xl bg-cyan px-5 py-3 text-sm font-semibold text-ink transition-all hover:bg-cyan/90 hover:shadow-[0_0_28px_-6px_var(--color-cyan)]"
+        >
+          <Icon name="download" class="h-4 w-4" />
+          Download résumé
+        </a>
+      </div>
+
+      <ul class="space-y-3">
+        {
+          channels.map((c) => (
+            <li>
+              <a
+                href={c.href}
+                target={c.external ? '_blank' : undefined}
+                rel={c.external ? 'noopener noreferrer' : undefined}
+                class="group flex items-center gap-4 rounded-[10px] border border-edge bg-ink/40 px-4 py-3.5 transition-colors hover:border-cyan/40"
+              >
+                <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-edge bg-surface text-cyan">
+                  <Icon name={c.icon} class="h-[18px] w-[18px]" />
+                </span>
+                <span class="min-w-0">
+                  <span class="block font-mono text-[0.7rem] tracking-wider text-muted uppercase">
+                    {c.label}
+                  </span>
+                  <span class="block truncate text-sm text-text transition-colors group-hover:text-cyan">
+                    {c.value}
+                  </span>
+                </span>
+                <span class="ml-auto text-muted transition-all group-hover:translate-x-0.5 group-hover:text-cyan">
+                  <Icon name="arrow" class="h-4 w-4" />
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>

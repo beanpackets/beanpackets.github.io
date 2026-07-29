@@ -1,0 +1,445 @@
+@import 'tailwindcss';
+
+@import '@fontsource-variable/ibm-plex-sans';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+/* Palette is the ANSI 16-colour set, tuned for contrast on a dark ground.
+   Every hue here is one a terminal actually emits. */
+@theme {
+  --color-ink: #0a0d14;
+  --color-surface: #10141d;
+  --color-surface-2: #161b26;
+  --color-edge: #232a38;
+  --color-edge-bright: #36415a;
+  --color-text: #e8edf4;
+  --color-muted: #8a95a8;
+
+  --color-red: #f4626a;
+  --color-green: #46d17f;
+  --color-yellow: #eab130;
+  --color-blue: #5b9dff;
+  --color-magenta: #c77dff;
+  --color-cyan: #2dd4e8;
+
+  --font-display: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    color-scheme: dark;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-cyan) 30%, transparent);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-cyan);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-edge-bright) transparent;
+  }
+}
+
+@layer components {
+  /* Every tinted element reads --tone. Default cyan; set data-tone to change it. */
+  :root {
+    --tone: var(--color-cyan);
+  }
+  [data-tone='red'] {
+    --tone: var(--color-red);
+  }
+  [data-tone='green'] {
+    --tone: var(--color-green);
+  }
+  [data-tone='yellow'] {
+    --tone: var(--color-yellow);
+  }
+  [data-tone='blue'] {
+    --tone: var(--color-blue);
+  }
+  [data-tone='magenta'] {
+    --tone: var(--color-magenta);
+  }
+  [data-tone='cyan'] {
+    --tone: var(--color-cyan);
+  }
+
+  .tone-text {
+    color: var(--tone);
+  }
+
+  .shell {
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .shell {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* Glass: floating surfaces only (nav, terminal, mobile menu).
+     Declare backdrop-filter unprefixed only. Adding -webkit- by hand makes
+     Lightning CSS drop the standard property, which breaks current Chromium. */
+  .glass {
+    background-color: color-mix(in oklab, var(--color-ink) 72%, transparent);
+    backdrop-filter: blur(16px) saturate(180%);
+    box-shadow: inset 0 1px 0 0 color-mix(in oklab, #fff 8%, transparent);
+  }
+
+  .glass-panel {
+    background-color: color-mix(in oklab, var(--color-surface) 84%, transparent);
+    backdrop-filter: blur(20px) saturate(180%);
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in oklab, #fff 10%, transparent),
+      0 24px 80px -24px rgba(0, 0, 0, 0.85);
+  }
+
+  @supports not (backdrop-filter: blur(1px)) {
+    .glass {
+      background-color: var(--color-ink);
+    }
+    .glass-panel {
+      background-color: var(--color-surface);
+    }
+  }
+
+  .progress-rail {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    z-index: 45;
+    height: 2px;
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+    background: linear-gradient(
+      90deg,
+      var(--color-blue),
+      var(--color-cyan) 35%,
+      var(--color-green) 68%,
+      var(--color-yellow)
+    );
+    will-change: transform;
+    pointer-events: none;
+  }
+
+  /* Noise over everything. Flat dark surfaces band without it. */
+  .grain::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 140px 140px;
+  }
+
+  .grid-texture {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .grid-texture::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(circle at center, var(--color-edge) 1px, transparent 1px);
+    background-size: 34px 34px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 20%, transparent 78%);
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 20%, transparent 78%);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* Cards. Radii vary by role rather than one value everywhere:
+     6px on data-ish blocks, 10px on feature cards, 4px on chips. */
+  .panel {
+    position: relative;
+    background: linear-gradient(180deg, var(--color-surface-2), var(--color-surface));
+    border: 1px solid var(--color-edge);
+    border-radius: 10px;
+    transition:
+      border-color 0.25s,
+      box-shadow 0.25s;
+  }
+
+  .panel:hover {
+    border-color: color-mix(in oklab, var(--tone) 42%, var(--color-edge));
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.4),
+      0 14px 34px -14px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Cursor spotlight, tinted per card. --mx/--my come from BaseLayout. */
+  .panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    background: radial-gradient(
+      320px circle at var(--mx, 50%) var(--my, 50%),
+      color-mix(in oklab, var(--tone) 13%, transparent),
+      transparent 66%
+    );
+    opacity: 0;
+    transition: opacity 0.35s;
+    pointer-events: none;
+  }
+
+  .panel:hover::after {
+    opacity: 1;
+  }
+
+  .panel-flat {
+    background: var(--color-surface);
+    border: 1px solid var(--color-edge);
+    border-radius: 6px;
+  }
+
+  /* Left rule in the card's tone. Cheaper than an icon and reads as structure. */
+  .tone-rule {
+    border-left: 2px solid var(--tone);
+  }
+
+  .elevate {
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.35),
+      0 8px 24px -12px rgba(0, 0, 0, 0.65);
+  }
+
+  .card-art {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .card-art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.3;
+    transform: scale(1.02);
+    transition:
+      opacity 0.5s,
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .group:hover .card-art img {
+    opacity: 0.46;
+    transform: scale(1.06);
+  }
+
+  .card-art::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--color-surface) 60%, transparent),
+      color-mix(in oklab, var(--color-surface) 88%, transparent) 55%,
+      var(--color-surface)
+    );
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--tone);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid color-mix(in oklab, var(--tone) 26%, var(--color-edge));
+    background: color-mix(in oklab, var(--tone) 9%, transparent);
+    color: color-mix(in oklab, var(--tone) 82%, #fff);
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.73rem;
+  }
+
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.3s;
+  }
+
+  .link-underline:hover,
+  .link-underline:focus-visible {
+    background-size: 100% 1px;
+  }
+
+  .prose-notes {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--color-muted);
+  }
+
+  .prose-notes > * + * {
+    margin-top: 1.25em;
+  }
+
+  .prose-notes h2 {
+    margin-top: 2.5em;
+    margin-bottom: 0.75em;
+    font-size: 1.45rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .prose-notes h3 {
+    margin-top: 2em;
+    margin-bottom: 0.6em;
+    font-size: 1.12rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .prose-notes strong {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  .prose-notes a {
+    color: var(--color-cyan);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .prose-notes ul,
+  .prose-notes ol {
+    padding-left: 1.4em;
+  }
+
+  .prose-notes ul {
+    list-style: disc;
+  }
+
+  .prose-notes ol {
+    list-style: decimal;
+  }
+
+  .prose-notes li::marker {
+    color: var(--color-blue);
+  }
+
+  .prose-notes li + li {
+    margin-top: 0.5em;
+  }
+
+  .prose-notes code {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    color: var(--color-yellow);
+    background: color-mix(in oklab, var(--color-yellow) 8%, transparent);
+    border: 1px solid var(--color-edge);
+    border-radius: 3px;
+    padding: 0.1em 0.36em;
+  }
+
+  .prose-notes pre {
+    background: var(--color-surface);
+    border: 1px solid var(--color-edge);
+    border-left: 2px solid var(--color-green);
+    border-radius: 6px;
+    padding: 1.1rem 1.25rem;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: color-mix(in oklab, var(--color-green) 62%, var(--color-text));
+  }
+
+  .prose-notes pre code {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+  }
+
+  .prose-notes blockquote {
+    border-left: 2px solid var(--color-magenta);
+    padding-left: 1.1em;
+    font-style: italic;
+  }
+
+  /* Visible by default; the reveal script opts elements in. */
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal] {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}

@@ -1,0 +1,13 @@
+# Normalize to LF in the repository regardless of the authoring platform.
+# The deploy workflow embeds a shell script; CRLF line endings there would
+# break it on the Linux runner.
+* text=auto eol=lf
+
+*.png  binary
+*.jpg  binary
+*.webp binary
+*.avif binary
+*.pdf  binary
+*.woff binary
+*.woff2 binary
+*.ico  binary

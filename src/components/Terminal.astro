@@ -1,0 +1,379 @@
+---
+/**
+ * Interactive terminal overlay.
+ *
+ * Opens with the ` / ~ key or any element carrying [data-terminal-open].
+ * Entirely client-side and dependency-free; every line of output is created
+ * with textContent (never innerHTML), so typed input can't inject markup and
+ * the strict CSP stays intact.
+ */
+---
+
+<div
+  id="terminal"
+  data-terminal
+  hidden
+  class="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
+>
+  <!-- Backdrop -->
+  <div data-terminal-backdrop class="absolute inset-0 bg-ink/80 backdrop-blur-sm"></div>
+
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-label="Interactive terminal"
+    class="glass-panel relative flex max-h-[80svh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-edge-bright"
+  >
+    <!-- Title bar -->
+    <div class="flex items-center gap-2 border-b border-edge bg-ink/60 px-4 py-2.5">
+      <span class="h-3 w-3 rounded-full bg-[#ff5f57]"></span>
+      <span class="h-3 w-3 rounded-full bg-[#febc2e]"></span>
+      <span class="h-3 w-3 rounded-full bg-[#28c840]"></span>
+      <p class="ml-3 flex-1 truncate font-mono text-xs text-muted">matthew@beanpackets: ~</p>
+      <button
+        type="button"
+        data-terminal-close
+        aria-label="Close terminal"
+        class="rounded-md px-2 py-0.5 font-mono text-xs text-muted transition-colors hover:bg-surface-2 hover:text-text"
+      >
+        esc
+      </button>
+    </div>
+
+    <!-- Scrollback -->
+    <div
+      data-terminal-output
+      aria-live="polite"
+      class="flex-1 space-y-0.5 overflow-y-auto px-4 py-3 font-mono text-[0.8rem] leading-relaxed"
+    >
+    </div>
+
+    <!-- Prompt -->
+    <div class="flex items-center gap-2 border-t border-edge px-4 py-3">
+      <span class="font-mono text-[0.8rem] text-cyan" aria-hidden="true">$</span>
+      <input
+        data-terminal-input
+        type="text"
+        autocomplete="off"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        enterkeyhint="send"
+        aria-label="Terminal command input"
+        placeholder="type 'help'"
+        class="w-full bg-transparent font-mono text-[0.8rem] text-text placeholder:text-muted/50 focus:outline-none"
+      />
+    </div>
+  </div>
+</div>
+
+<script>
+  import { SITE, LINKS } from '../data/site.js';
+
+  const root = document.querySelector<HTMLElement>('[data-terminal]');
+  const output = root?.querySelector<HTMLElement>('[data-terminal-output]');
+  const input = root?.querySelector<HTMLInputElement>('[data-terminal-input]');
+  const closeBtn = root?.querySelector<HTMLButtonElement>('[data-terminal-close]');
+  const backdrop = root?.querySelector<HTMLElement>('[data-terminal-backdrop]');
+
+  if (root && output && input && closeBtn && backdrop) {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const sleep = (ms: number) => (reduced ? Promise.resolve() : new Promise((r) => setTimeout(r, ms)));
+    const jitter = (base: number, spread: number) => (base + Math.random() * spread).toFixed(1);
+
+    let booted = false;
+    let lastFocus: HTMLElement | null = null;
+    const history: string[] = [];
+    let histIdx = -1;
+    let busy = false;
+
+    // ---- output helpers. textContent only, so typed input can't inject markup ----
+    const line = (text = '', cls = 'text-muted') => {
+      const el = document.createElement('div');
+      el.className = cls + ' whitespace-pre-wrap break-words';
+      el.textContent = text;
+      output.appendChild(el);
+      output.scrollTop = output.scrollHeight;
+      return el;
+    };
+
+    const echo = (cmd: string) => {
+      const el = document.createElement('div');
+      el.className = 'whitespace-pre-wrap break-words';
+      const p = document.createElement('span');
+      p.className = 'text-cyan';
+      p.textContent = '$ ';
+      const c = document.createElement('span');
+      c.className = 'text-text';
+      c.textContent = cmd;
+      el.append(p, c);
+      output.appendChild(el);
+      output.scrollTop = output.scrollHeight;
+    };
+
+    const link = (label: string, href: string, external = true) => {
+      const el = document.createElement('div');
+      el.className = 'whitespace-pre-wrap break-words';
+      el.append('  ');
+      const a = document.createElement('a');
+      a.href = href;
+      a.textContent = label;
+      a.className = 'text-cyan underline underline-offset-2 hover:text-text';
+      if (external) {
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+      }
+      el.appendChild(a);
+      output.appendChild(el);
+      output.scrollTop = output.scrollHeight;
+    };
+
+    const blank = () => line('', '');
+
+    // ---- open / close ----
+    const open = () => {
+      if (!root.hidden) return;
+      lastFocus = document.activeElement as HTMLElement;
+      root.hidden = false;
+      document.body.style.overflow = 'hidden';
+      if (!booted) {
+        booted = true;
+        line(`${SITE.name} // beanpackets terminal`, 'text-text');
+        line(`IT Support & Network Professional, ${SITE.location}`);
+        line("type 'help' to see available commands", 'text-green');
+        blank();
+      }
+      input.focus();
+    };
+
+    const close = () => {
+      root.hidden = true;
+      document.body.style.overflow = '';
+      lastFocus?.focus?.();
+    };
+
+    // ---- commands ----
+    const help = () => {
+      line('available commands:', 'text-text');
+      const rows: [string, string][] = [
+        ['help', 'this list'],
+        ['whoami', 'who is matthew bean'],
+        ['skills', 'technical skill groups'],
+        ['experience', 'work history, condensed'],
+        ['projects', 'home lab & projects'],
+        ['notes', 'lab notes index'],
+        ['resume', 'download the résumé (pdf)'],
+        ['contact', 'how to reach me'],
+        ['ping matthew', 'check availability'],
+        ['traceroute matthew', 'trace the path to a new hire'],
+        ['ls', 'list site sections'],
+        ['goto <section>', 'jump to a section'],
+        ['clear', 'clear the screen'],
+        ['exit', 'close the terminal'],
+      ];
+      for (const [cmd, desc] of rows) line(`  ${cmd.padEnd(20)} ${desc}`);
+    };
+
+    const whoami = () => {
+      line('matthew bean', 'text-text');
+      line('  IT support: help desk operations, hardware');
+      line('  diagnostics, and methodical troubleshooting. Salesforce CRM');
+      line('  admin for six years before that. Studying for the CCNA.');
+      line(`  ${SITE.location}, available full-time, on-site`, 'text-green');
+    };
+
+    const skills = () => {
+      const rows: [string, string][] = [
+        ['systems', 'Windows 10/11, Active Directory, Azure Virtual Desktop, Linux'],
+        ['networking', 'subnetting, routing & switching, VLANs, DNS/DHCP, VPN'],
+        ['hardware', 'PC builds, component repair, boot/POST diagnostics'],
+        ['platforms', 'Salesforce, GitHub Issues, Git, Google Workspace'],
+        ['operations', 'ticketing, SLA management, escalation, documentation'],
+      ];
+      for (const [k, v] of rows) {
+        const el = document.createElement('div');
+        el.className = 'whitespace-pre-wrap break-words';
+        const key = document.createElement('span');
+        key.className = 'text-cyan';
+        key.textContent = `  ${k.padEnd(12)}`;
+        const val = document.createElement('span');
+        val.className = 'text-muted';
+        val.textContent = v;
+        el.append(key, val);
+        output.appendChild(el);
+      }
+      output.scrollTop = output.scrollHeight;
+    };
+
+    const experience = () => {
+      line('  2025-now   JoyPunk LLC, HelpDesk Support Technician', 'text-text');
+      line('             tickets, triage, SSO & access issues, bug reproduction');
+      line('  2019-2025  Rainbow Financial Group, Technical Support Specialist', 'text-text');
+      line('             Salesforce CRM admin, licensing lifecycle, escalations');
+      line("  run 'goto experience' for the full timeline");
+    };
+
+    const projects = () => {
+      line('  home server & network   DNS filtering, VPN, uptime monitoring');
+      line('  packet tracer labs      VLANs, inter-VLAN routing, trunking');
+      line('  pc builds & repair      full builds, boot/POST failure diagnosis');
+      line('  this site               Astro, hardened CI/CD, strict CSP');
+    };
+
+    const notes = () => {
+      line('lab notes:', 'text-text');
+      link('subnetting without the panic', '/notes/subnetting-the-slash-26/', false);
+      link('VLANs, one trunk, and the mistake I keep making', '/notes/vlan-trunk-lab/', false);
+      link("bug reports that don't bounce back", '/notes/bug-reports-that-dont-bounce/', false);
+    };
+
+    const contact = () => {
+      line('reach me at:', 'text-text');
+      link(SITE.email, LINKS.email, false);
+      link(`github.com/${SITE.githubUser}`, LINKS.github);
+      link(`linkedin.com/in/${SITE.githubUser}`, LINKS.linkedin);
+    };
+
+    const ping = async () => {
+      line(`PING matthew.bean (${SITE.location}): 56 data bytes`);
+      for (let i = 0; i < 4; i++) {
+        await sleep(320);
+        line(`64 bytes from matthew.bean: icmp_seq=${i} ttl=64 time=${jitter(8, 6)} ms`);
+      }
+      await sleep(200);
+      line('--- matthew.bean ping statistics ---');
+      line('4 packets transmitted, 4 received, 0.0% packet loss', 'text-green');
+      line('status: available full-time, on-site, san diego', 'text-green');
+    };
+
+    const traceroute = async () => {
+      line('traceroute to matthew.bean, 30 hops max, 60 byte packets');
+      const hops: [string, string][] = [
+        ['job-posting.internal', jitter(0.4, 0.3)],
+        ['resume-screen.hr', jitter(2, 2)],
+        ['phone-screen.hr', jitter(6, 3)],
+        ['technical-interview.panel', jitter(12, 6)],
+        ['reference-check.hr', jitter(18, 4)],
+        ['offer-letter.hr', jitter(21, 4)],
+      ];
+      for (let i = 0; i < hops.length; i++) {
+        await sleep(380);
+        line(` ${i + 1}  ${hops[i][0].padEnd(28)} ${hops[i][1]} ms`);
+      }
+      await sleep(420);
+      line(` 7  matthew.bean.hired          ${jitter(23, 3)} ms`, 'text-green');
+      line('trace complete, 0% packet loss end to end', 'text-green');
+    };
+
+    const ls = () => {
+      line('about/  skills/  work/  experience/  certifications/  notes/  github/  contact/');
+    };
+
+    const goto_ = (arg: string) => {
+      const valid = ['about', 'skills', 'work', 'experience', 'certifications', 'notes', 'github', 'contact'];
+      if (!valid.includes(arg)) {
+        line(`goto: no such section: ${arg || '(none)'}. try 'ls'`, 'text-[#ff5f57]');
+        return;
+      }
+      const target = document.getElementById(arg);
+      if (target) {
+        close();
+        // 'instant', not 'auto': auto defers to the CSS scroll-behavior, which
+        // is smooth, so reduced-motion users would still get an animation.
+        target.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth' });
+      } else {
+        // Notes pages have no homepage sections, so navigate instead.
+        window.location.href = `/#${arg}`;
+      }
+    };
+
+    const sudo = (rest: string) => {
+      if (/hire\s+matthew/.test(rest)) {
+        line('[sudo] password for recruiter: ********', 'text-muted');
+        line('permission granted.', 'text-green');
+        line('scheduling interview with matthew.bean ...', 'text-green');
+        contact();
+      } else {
+        line('recruiter is not in the sudoers file. this incident will be reported.', 'text-[#febc2e]');
+      }
+    };
+
+    const run = async (raw: string) => {
+      const [cmd, ...restArr] = raw.split(/\s+/);
+      const rest = restArr.join(' ');
+      switch (cmd) {
+        case 'help': case '?': help(); break;
+        case 'whoami': case 'about': whoami(); break;
+        case 'skills': skills(); break;
+        case 'experience': case 'history': experience(); break;
+        case 'projects': case 'work': projects(); break;
+        case 'notes': notes(); break;
+        case 'contact': contact(); break;
+        case 'resume': case 'cv':
+          line('downloading Matthew_Bean_Resume.pdf ...', 'text-green');
+          window.location.href = SITE.resumeFile;
+          break;
+        case 'github': window.open(LINKS.github, '_blank', 'noopener'); line(`opening github.com/${SITE.githubUser} ...`); break;
+        case 'linkedin': window.open(LINKS.linkedin, '_blank', 'noopener'); line('opening linkedin ...'); break;
+        case 'ping': await ping(); break;
+        case 'traceroute': case 'tracert': await traceroute(); break;
+        case 'ls': case 'dir': ls(); break;
+        case 'goto': case 'cd': goto_(rest.replace(/^[#/]/, '')); break;
+        case 'sudo': sudo(rest); break;
+        case 'clear': case 'cls': output.replaceChildren(); break;
+        case 'exit': case 'quit': case 'q': close(); break;
+        case 'pwd': line('/home/matthew/portfolio'); break;
+        case 'uname': line('BeanOS 1.0 static-x86_64. no server, no database, no problem'); break;
+        case '': break;
+        default:
+          line(`bash: ${cmd}: command not found. try 'help'`, 'text-[#ff5f57]');
+      }
+    };
+
+    // ---- wiring ----
+    input.addEventListener('keydown', async (e) => {
+      if (e.key === 'Enter' && !busy) {
+        const raw = input.value.trim();
+        input.value = '';
+        echo(raw);
+        if (raw) {
+          history.push(raw);
+          histIdx = history.length;
+        }
+        busy = true;
+        await run(raw.toLowerCase());
+        busy = false;
+        blank();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (histIdx > 0) input.value = history[(histIdx -= 1)] ?? '';
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (histIdx < history.length - 1) input.value = history[(histIdx += 1)] ?? '';
+        else { histIdx = history.length; input.value = ''; }
+      }
+    });
+
+    closeBtn.addEventListener('click', close);
+    backdrop.addEventListener('click', close);
+
+    document.addEventListener('keydown', (e) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      const typing = tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement)?.isContentEditable;
+      if ((e.key === '`' || e.key === '~') && !typing && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        open();
+      } else if (e.key === 'Escape' && !root.hidden) {
+        close();
+      }
+    });
+
+    // Any element on the page can open the terminal.
+    for (const btn of document.querySelectorAll('[data-terminal-open]')) {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        open();
+      });
+    }
+  }
+</script>

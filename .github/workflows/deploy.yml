@@ -1,0 +1,94 @@
+name: Build & deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least privilege: the build job gets read-only access to the repo. Only the
+# deploy job may write to Pages. No other scopes, no repository secrets.
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Actions pinned to full commit SHAs, not tags. Tags are
+      # mutable: a compromised upstream tag executes silently in this
+      # pipeline. A SHA cannot be repointed. Version comments are for humans.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Build
+        run: npm run build
+
+      - name: Guard against leaked personal data
+        # Fails the build if private data reaches the published output. The
+        # checks are generic shapes, not literal values,
+        # on purpose: a guard that hardcodes the secret it protects would publish
+        # that secret in this very file.
+        run: |
+          set -uo pipefail
+          fail=0
+
+          # Only the public contact address may appear anywhere in the output.
+          if grep -rIohE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' dist/ \
+               | grep -vixF 'bean.packets@gmail.com' | sort -u | grep .; then
+            echo "::error::Unexpected email address found in dist/ (see list above)"
+            fail=1
+          fi
+
+          # Any phone-number-shaped string in a rendered page.
+          if grep -rIohE '\(?[0-9]{3}\)?[ .-][0-9]{3}[ .-][0-9]{4}' --include='*.html' dist/ \
+               | sort -u | grep .; then
+            echo "::error::Phone-number-shaped string found in dist/"
+            fail=1
+          fi
+
+          # Local filesystem paths from a development machine.
+          if grep -rIlE 'C:\\\\Users|/home/[a-z]+/|/Users/[a-z]+/' dist/ | grep .; then
+            echo "::error::Local filesystem path found in dist/"
+            fail=1
+          fi
+
+          if [ "$fail" -eq 0 ]; then echo "Privacy guard passed, no leaks in dist/"; fi
+          exit $fail
+
+      - name: Configure Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0

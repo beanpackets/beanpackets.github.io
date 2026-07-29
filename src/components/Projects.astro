@@ -1,0 +1,80 @@
+---
+import { Image } from 'astro:assets';
+import Section from './Section.astro';
+import Icon from './Icon.astro';
+import { PROJECTS } from '../data/resume.js';
+import { LINKS } from '../data/site.js';
+
+import artServer from '../assets/project-server.png';
+import artVlan from '../assets/project-vlan.png';
+import artHardware from '../assets/project-hardware.png';
+import artCicd from '../assets/project-cicd.png';
+
+const ART: Record<string, ImageMetadata> = {
+  server: artServer,
+  network: artVlan,
+  chip: artHardware,
+  code: artCicd,
+};
+---
+
+<Section id="work" variant="bare" tone="green" title="Home lab" eyebrow="ls ~/lab">
+  <!-- featured spans the row, the other three sit 3-across -->
+  <div class="grid gap-4 md:grid-cols-3">
+    {
+      PROJECTS.map((p) => (
+        <article
+          data-tone={p.tone}
+          data-reveal-target
+          class={`panel group relative flex flex-col overflow-hidden ${p.featured ? 'md:col-span-3' : ''}`}
+        >
+          {ART[p.icon] && (
+            <div class="card-art" aria-hidden="true">
+              <Image
+                src={ART[p.icon]}
+                alt=""
+                widths={p.featured ? [760, 1100] : [420, 760]}
+                sizes={p.featured ? '92vw' : '(min-width: 768px) 31vw, 92vw'}
+                quality={62}
+                loading="lazy"
+              />
+            </div>
+          )}
+
+          <div
+            class={`relative z-10 flex flex-1 flex-col p-6 ${p.featured ? 'sm:p-8 md:max-w-2xl' : 'sm:p-7'}`}
+          >
+            <div class="flex items-center gap-2.5">
+              <span class="tone-text">
+                <Icon name={p.icon} class="h-5 w-5" />
+              </span>
+              <h3 class={`font-semibold ${p.featured ? 'text-xl sm:text-2xl' : 'text-lg'}`}>{p.title}</h3>
+            </div>
+
+            <p class={`mt-3 flex-1 leading-relaxed text-muted ${p.featured ? 'text-[0.95rem]' : 'text-sm'}`}>
+              {p.summary}
+            </p>
+
+            <div class="mt-5 flex flex-wrap items-center gap-2">
+              {p.tags.map((t) => (
+                <span class="chip">{t}</span>
+              ))}
+
+              {p.repo && (
+                <a
+                  href={`${LINKS.github}/beanpackets.github.io`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="tone-text link-underline ml-1 inline-flex items-center gap-1.5 text-sm font-medium"
+                >
+                  source
+                  <Icon name="external" class="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+</Section>

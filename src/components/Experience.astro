@@ -1,0 +1,40 @@
+---
+import Section from './Section.astro';
+import { EXPERIENCE } from '../data/resume.js';
+---
+
+<Section id="experience" variant="bare" tone="green" title="Where I've worked" eyebrow="history">
+  <ol class="space-y-10">
+    {
+      EXPERIENCE.map((job) => (
+        <li class="relative pl-6 sm:pl-8" data-tone={job.tone} data-reveal-target>
+          {/* rail + node, tinted per role */}
+          <span
+            class="absolute top-2 bottom-0 left-[3px] w-px bg-edge"
+            aria-hidden="true"
+          />
+          <span
+            class="tone-text absolute top-[7px] left-0 block h-[7px] w-[7px] rounded-full bg-current"
+            aria-hidden="true"
+          />
+
+          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h3 class="text-lg font-semibold sm:text-xl">
+              {job.company}
+              {job.location && <span class="ml-2 text-sm font-normal text-muted">{job.location}</span>}
+            </h3>
+            <p class="font-mono text-xs text-muted">{job.period}</p>
+          </div>
+
+          <p class={`mt-1 text-[0.95rem] ${job.compact ? 'text-muted' : 'tone-text'}`}>{job.role}</p>
+
+          <ul class="mt-4 max-w-3xl space-y-2.5">
+            {job.bullets.map((b) => (
+              <li class="text-sm leading-relaxed text-muted">{b}</li>
+            ))}
+          </ul>
+        </li>
+      ))
+    }
+  </ol>
+</Section>

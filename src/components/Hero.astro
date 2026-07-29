@@ -1,0 +1,287 @@
+---
+import { Image } from 'astro:assets';
+import heroArt from '../assets/hero-network.png';
+import { SITE } from '../data/site.js';
+import Icon from './Icon.astro';
+---
+
+<section class="relative isolate flex min-h-[88svh] items-center overflow-hidden pt-16">
+  <!-- Base artwork. If JS never runs, this alone carries the section. -->
+  <Image
+    src={heroArt}
+    alt=""
+    widths={[768, 1100, 1376]}
+    sizes="100vw"
+    quality={72}
+    loading="eager"
+    fetchpriority="high"
+    class="absolute inset-0 -z-20 h-full w-full object-cover object-right"
+  />
+
+  <!-- Animated packet layer, drawn on top of the artwork. -->
+  <canvas
+    data-network-canvas
+    aria-hidden="true"
+    class="absolute inset-0 -z-10 h-full w-full opacity-0 transition-opacity duration-1000"
+  ></canvas>
+
+  <!-- Legibility scrims: darken left for text, fade bottom into the page. -->
+  <div
+    class="absolute inset-0 -z-10 bg-[linear-gradient(100deg,var(--color-ink)_18%,color-mix(in_oklab,var(--color-ink)_82%,transparent)_48%,transparent_88%)]"
+  >
+  </div>
+  <div
+    class="absolute inset-x-0 bottom-0 -z-10 h-40 bg-[linear-gradient(to_top,var(--color-ink),transparent)]"
+  >
+  </div>
+
+  <div class="shell relative w-full py-20">
+    <div class="max-w-2xl">
+      <p class="mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-xs tracking-wide uppercase">
+        <span class="flex items-center gap-2 text-green">
+          <span class="inline-block h-1.5 w-1.5 rounded-full bg-green"></span>
+          {SITE.availability}
+        </span>
+        <span class="text-edge-bright">/</span>
+        <span class="text-muted">{SITE.location}</span>
+      </p>
+
+      <h1 class="text-[clamp(2.6rem,7.5vw,4.75rem)] leading-[1.02] font-semibold">
+        Matthew<br />Bean
+      </h1>
+
+      <p class="mt-6 font-display text-[clamp(1.15rem,2.6vw,1.6rem)] leading-snug text-text/90">
+        <span class="text-blue">IT support</span> &amp; <span class="text-cyan">networking</span>
+      </p>
+
+      <p class="mt-5 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
+        Help desk operations, hardware diagnostics, and the kind of methodical troubleshooting that
+        closes tickets instead of forwarding them. Studying for the CCNA.
+      </p>
+
+      <div class="mt-10 flex flex-wrap items-center gap-3">
+        <a
+          href="#work"
+          class="group inline-flex items-center gap-2 rounded-xl bg-cyan px-5 py-3 text-sm font-semibold text-ink transition-all hover:bg-cyan/90 hover:shadow-[0_0_28px_-6px_var(--color-cyan)]"
+        >
+          View my work
+          <Icon name="arrow" class="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+        </a>
+        <a
+          href={SITE.resumeFile}
+          class="inline-flex items-center gap-2 rounded-xl border border-edge-bright bg-surface/60 px-5 py-3 text-sm font-medium text-text backdrop-blur-sm transition-colors hover:border-cyan/60 hover:text-cyan"
+        >
+          <Icon name="download" class="h-4 w-4" />
+          Download résumé
+        </a>
+      </div>
+
+      <button
+        type="button"
+        data-terminal-open
+        class="mt-12 hidden items-center gap-2 font-mono text-xs text-muted/70 transition-colors hover:text-cyan md:inline-flex"
+      >
+        <span
+          class="inline-flex items-center rounded border border-edge bg-surface/60 px-1.5 py-0.5 text-[0.7rem]"
+          aria-hidden="true"
+        >
+          ~
+        </span>
+        press for terminal
+      </button>
+    </div>
+  </div>
+</section>
+
+<script>
+  /* Drifting node mesh with packets crossing the links.
+     Low node count, DPR capped at 2, pauses off-screen and on hidden tabs,
+     never runs under reduced-motion. Static art underneath is the fallback. */
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-network-canvas]');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (canvas && !reduced) {
+    const ctx = canvas.getContext('2d', { alpha: true });
+
+    if (ctx) {
+      const LINK_DIST = 165;
+      const LINE = '45, 212, 232';
+      // ANSI hues, weighted so cyan still dominates
+      const HUES = [
+        '45, 212, 232',
+        '45, 212, 232',
+        '70, 209, 127',
+        '91, 157, 255',
+        '234, 177, 48',
+        '199, 125, 255',
+      ];
+
+      let width = 0;
+      let height = 0;
+      let raf = 0;
+      let running = false;
+
+      type Node = { x: number; y: number; vx: number; vy: number; r: number };
+      type Packet = { a: number; b: number; t: number; speed: number; hue: string };
+
+      let nodes: Node[] = [];
+      let packets: Packet[] = [];
+
+      const rand = (min: number, max: number) => min + Math.random() * (max - min);
+
+      function build() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const rect = canvas!.getBoundingClientRect();
+        width = rect.width;
+        height = rect.height;
+        canvas!.width = Math.round(width * dpr);
+        canvas!.height = Math.round(height * dpr);
+        ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        // Scale node count with area, but keep a hard ceiling for low-end GPUs.
+        const count = Math.min(46, Math.max(16, Math.round((width * height) / 26000)));
+        nodes = Array.from({ length: count }, () => ({
+          x: rand(0, width),
+          y: rand(0, height),
+          vx: rand(-0.14, 0.14),
+          vy: rand(-0.14, 0.14),
+          r: rand(1, 2.3),
+        }));
+
+        packets = Array.from({ length: Math.min(9, Math.round(count / 4)) }, () => spawn());
+      }
+
+      function spawn(): Packet {
+        const a = Math.floor(Math.random() * nodes.length);
+        let b = Math.floor(Math.random() * nodes.length);
+        if (b === a) b = (b + 1) % nodes.length;
+        return {
+          a,
+          b,
+          t: Math.random(),
+          speed: rand(0.0018, 0.0052),
+          hue: HUES[Math.floor(Math.random() * HUES.length)],
+        };
+      }
+
+      function frame() {
+        if (!running) return;
+        ctx!.clearRect(0, 0, width, height);
+
+        // Drift, bouncing softly off the edges.
+        for (const n of nodes) {
+          n.x += n.vx;
+          n.y += n.vy;
+          if (n.x < 0 || n.x > width) n.vx *= -1;
+          if (n.y < 0 || n.y > height) n.vy *= -1;
+        }
+
+        // Links, faded by distance.
+        ctx!.lineWidth = 1;
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const dx = nodes[i].x - nodes[j].x;
+            const dy = nodes[i].y - nodes[j].y;
+            const dist = Math.hypot(dx, dy);
+            if (dist >= LINK_DIST) continue;
+            const alpha = (1 - dist / LINK_DIST) * 0.22;
+            ctx!.strokeStyle = `rgba(${LINE}, ${alpha})`;
+            ctx!.beginPath();
+            ctx!.moveTo(nodes[i].x, nodes[i].y);
+            ctx!.lineTo(nodes[j].x, nodes[j].y);
+            ctx!.stroke();
+          }
+        }
+
+        // Nodes.
+        for (const n of nodes) {
+          ctx!.fillStyle = `rgba(${LINE}, 0.55)`;
+          ctx!.beginPath();
+          ctx!.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          ctx!.fill();
+        }
+
+        // Packets in flight.
+        for (let k = 0; k < packets.length; k++) {
+          const p = packets[k];
+          const from = nodes[p.a];
+          const to = nodes[p.b];
+          if (!from || !to) {
+            packets[k] = spawn();
+            continue;
+          }
+
+          p.t += p.speed;
+          if (p.t >= 1) {
+            packets[k] = spawn();
+            continue;
+          }
+
+          const x = from.x + (to.x - from.x) * p.t;
+          const y = from.y + (to.y - from.y) * p.t;
+          const rgb = p.hue;
+          // Fade in and out at the endpoints so packets never pop.
+          const fade = Math.sin(p.t * Math.PI);
+
+          const glow = ctx!.createRadialGradient(x, y, 0, x, y, 9);
+          glow.addColorStop(0, `rgba(${rgb}, ${0.85 * fade})`);
+          glow.addColorStop(1, `rgba(${rgb}, 0)`);
+          ctx!.fillStyle = glow;
+          ctx!.beginPath();
+          ctx!.arc(x, y, 9, 0, Math.PI * 2);
+          ctx!.fill();
+
+          ctx!.fillStyle = `rgba(255, 255, 255, ${0.9 * fade})`;
+          ctx!.beginPath();
+          ctx!.arc(x, y, 1.5, 0, Math.PI * 2);
+          ctx!.fill();
+        }
+
+        raf = requestAnimationFrame(frame);
+      }
+
+      // The loop should run only when the hero is BOTH on-screen and in a
+      // visible tab. Tracking these separately matters: with a single flag,
+      // returning to the tab would restart the animation even if the user had
+      // long since scrolled past the hero.
+      let onScreen = true;
+      let tabVisible = !document.hidden;
+
+      function sync() {
+        if (onScreen && tabVisible) {
+          if (running) return;
+          running = true;
+          raf = requestAnimationFrame(frame);
+        } else if (running) {
+          running = false;
+          cancelAnimationFrame(raf);
+        }
+      }
+
+      build();
+      canvas.classList.replace('opacity-0', 'opacity-60');
+      sync();
+
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(
+          ([entry]) => {
+            onScreen = entry.isIntersecting;
+            sync();
+          },
+          { threshold: 0 }
+        ).observe(canvas);
+      }
+
+      document.addEventListener('visibilitychange', () => {
+        tabVisible = !document.hidden;
+        sync();
+      });
+
+      let resizeTimer: number;
+      window.addEventListener('resize', () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(build, 180);
+      });
+    }
+  }
+</script>
