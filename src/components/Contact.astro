@@ -32,7 +32,7 @@ const channels = [
     </div>
 
     <div
-      class="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-cyan/10 blur-3xl"
+      class="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-accent/10 blur-3xl"
       aria-hidden="true"
     >
     </div>
@@ -48,7 +48,7 @@ const channels = [
 
         <a
           href={SITE.resumeFile}
-          class="mt-7 inline-flex items-center gap-2 rounded-xl bg-cyan px-5 py-3 text-sm font-semibold text-ink transition-all hover:bg-cyan/90 hover:shadow-[0_0_28px_-6px_var(--color-cyan)]"
+          class="mt-7 group inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-ink hover:text-ground"
         >
           <Icon name="download" class="h-4 w-4" />
           Download résumé
@@ -63,20 +63,20 @@ const channels = [
                 href={c.href}
                 target={c.external ? '_blank' : undefined}
                 rel={c.external ? 'noopener noreferrer' : undefined}
-                class="group flex items-center gap-4 rounded-[10px] border border-edge bg-ink/40 px-4 py-3.5 transition-colors hover:border-cyan/40"
+                class="group flex items-center gap-4 rounded-[10px] border border-edge bg-ground/40 px-4 py-3.5 transition-colors hover:border-accent/40"
               >
-                <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-edge bg-surface text-cyan">
+                <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-edge bg-surface text-accent-ink">
                   <Icon name={c.icon} class="h-[18px] w-[18px]" />
                 </span>
                 <span class="min-w-0">
                   <span class="block font-mono text-[0.7rem] tracking-wider text-muted uppercase">
                     {c.label}
                   </span>
-                  <span class="block truncate text-sm text-text transition-colors group-hover:text-cyan">
+                  <span class="block truncate text-sm text-text transition-colors group-hover:text-accent-ink">
                     {c.value}
                   </span>
                 </span>
-                <span class="ml-auto text-muted transition-all group-hover:translate-x-0.5 group-hover:text-cyan">
+                <span class="ml-auto text-muted transition-all group-hover:translate-x-0.5 group-hover:text-accent-ink">
                   <Icon name="arrow" class="h-4 w-4" />
                 </span>
               </a>

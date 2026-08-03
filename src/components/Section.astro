@@ -10,7 +10,7 @@ interface Props {
   class?: string;
 }
 
-const { id, title, eyebrow, lead, tone = 'cyan', variant = 'stack', class: className = '' } = Astro.props;
+const { id, title, eyebrow, lead, tone = 'accent', variant = 'stack', class: className = '' } = Astro.props;
 ---
 
 <section id={id} data-tone={tone} class={`shell scroll-mt-24 py-20 sm:py-28 ${className}`}>

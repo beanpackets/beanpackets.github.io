@@ -20,9 +20,9 @@ const sections = [
   <div class="shell flex h-16 items-center justify-between gap-4">
     <a
       href="/"
-      class="font-mono text-sm font-medium tracking-tight text-text transition-colors hover:text-cyan"
+      class="font-mono text-sm font-medium tracking-tight text-text transition-colors hover:text-accent-ink"
     >
-      <span class="text-cyan">$</span>&nbsp;{SITE.githubUser}
+      bean<span class="text-accent-ink">.</span>packets
     </a>
 
     <nav aria-label="Primary" class="hidden items-center gap-7 md:flex">
@@ -40,7 +40,7 @@ const sections = [
         href={LINKS.github}
         target="_blank"
         rel="noopener noreferrer"
-        class="rounded-lg p-2 text-muted transition-colors hover:bg-surface hover:text-cyan"
+        class="rounded-lg p-2 text-muted transition-colors hover:bg-surface hover:text-accent-ink"
         aria-label="GitHub profile (opens in a new tab)"
       >
         <Icon name="github" class="h-[18px] w-[18px]" />
@@ -49,14 +49,14 @@ const sections = [
         href={LINKS.linkedin}
         target="_blank"
         rel="noopener noreferrer"
-        class="rounded-lg p-2 text-muted transition-colors hover:bg-surface hover:text-cyan"
+        class="rounded-lg p-2 text-muted transition-colors hover:bg-surface hover:text-accent-ink"
         aria-label="LinkedIn profile (opens in a new tab)"
       >
         <Icon name="linkedin" class="h-[18px] w-[18px]" />
       </a>
       <a
         href={SITE.resumeFile}
-        class="ml-1 hidden rounded-lg border border-edge bg-surface px-3.5 py-1.5 text-sm font-medium text-text transition-colors hover:border-cyan/50 hover:text-cyan sm:inline-block"
+        class="ml-1 hidden rounded-lg border border-edge bg-surface px-3.5 py-1.5 text-sm font-medium text-text transition-colors hover:border-accent/50 hover:text-accent-ink sm:inline-block"
       >
         Résumé
       </a>
@@ -69,7 +69,7 @@ const sections = [
         aria-expanded="false"
         aria-controls="mobile-menu"
         aria-label="Open menu"
-        class="ml-1 rounded-lg p-2 text-muted transition-colors hover:bg-surface hover:text-cyan md:hidden"
+        class="ml-1 rounded-lg p-2 text-muted transition-colors hover:bg-surface hover:text-accent-ink md:hidden"
       >
         <svg
           class="h-5 w-5"
@@ -98,7 +98,7 @@ const sections = [
         sections.map((s) => (
           <a
             href={s.href}
-            class="rounded-lg px-2 py-2.5 text-sm text-muted transition-colors hover:bg-surface hover:text-cyan"
+            class="rounded-lg px-2 py-2.5 text-sm text-muted transition-colors hover:bg-surface hover:text-accent-ink"
           >
             {s.label}
           </a>
@@ -107,13 +107,13 @@ const sections = [
       <button
         type="button"
         data-terminal-open
-        class="rounded-lg px-2 py-2.5 text-left font-mono text-sm text-muted transition-colors hover:bg-surface hover:text-cyan"
+        class="rounded-lg px-2 py-2.5 text-left font-mono text-sm text-muted transition-colors hover:bg-surface hover:text-accent-ink"
       >
-        <span class="text-cyan">$</span> terminal
+        <span class="text-accent-ink">$</span> terminal
       </button>
       <a
         href={SITE.resumeFile}
-        class="mt-2 rounded-lg border border-edge bg-surface px-3 py-2.5 text-center text-sm font-medium text-text transition-colors hover:border-cyan/50 hover:text-cyan"
+        class="mt-2 rounded-lg border border-edge bg-surface px-3 py-2.5 text-center text-sm font-medium text-text transition-colors hover:border-accent/50 hover:text-accent-ink"
       >
         Download résumé
       </a>

@@ -23,7 +23,7 @@ export const SKILLS = [
   {
     title: 'Networking',
     icon: 'network',
-    tone: 'cyan',
+    tone: 'accent',
     badge: 'CCNA in progress',
     items: [
       'IP addressing & subnetting',
@@ -47,7 +47,7 @@ export const SKILLS = [
   {
     title: 'Platforms & Tools',
     icon: 'tools',
-    tone: 'magenta',
+    tone: 'accent',
     items: [
       'Salesforce CRM config and automation',
       'GitHub Issues, Git version control',
@@ -83,7 +83,7 @@ export const PROJECTS = [
   },
   {
     title: 'Packet Tracer VLAN labs',
-    tone: 'cyan',
+    tone: 'accent',
     icon: 'network',
     summary:
       'CCNA practice topologies. VLAN segmentation, inter-VLAN routing, trunking. Built, broken, and re-traced until the failure modes are obvious.',
@@ -99,7 +99,7 @@ export const PROJECTS = [
   },
   {
     title: 'This site',
-    tone: 'magenta',
+    tone: 'accent',
     icon: 'code',
     repo: true,
     summary:
@@ -152,7 +152,7 @@ export const CERTIFICATIONS = [
   {
     name: 'Cisco CCNA',
     status: 'in-progress',
-    tone: 'cyan',
+    tone: 'accent',
     detail: 'Routing and switching, VLANs, subnetting, network security fundamentals.',
   },
   {
@@ -182,7 +182,7 @@ export const EDUCATION = [
 
 export const STATS = [
   { value: '7+', unit: 'yrs', label: 'Technical support', tone: 'blue' },
-  { value: '3', unit: '', label: 'MS Learn tracks', tone: 'magenta' },
-  { value: 'CCNA', unit: '', label: 'In progress', tone: 'cyan' },
+  { value: '3', unit: '', label: 'MS Learn tracks', tone: 'accent' },
+  { value: 'CCNA', unit: '', label: 'In progress', tone: 'accent' },
   { value: '100%', unit: '', label: 'On-site availability', tone: 'green' },
 ];

@@ -16,7 +16,7 @@
   class="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
 >
   <!-- Backdrop -->
-  <div data-terminal-backdrop class="absolute inset-0 bg-ink/80 backdrop-blur-sm"></div>
+  <div data-terminal-backdrop class="absolute inset-0 bg-ground/80 backdrop-blur-sm"></div>
 
   <div
     role="dialog"
@@ -25,7 +25,7 @@
     class="glass-panel relative flex max-h-[80svh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-edge-bright"
   >
     <!-- Title bar -->
-    <div class="flex items-center gap-2 border-b border-edge bg-ink/60 px-4 py-2.5">
+    <div class="flex items-center gap-2 border-b border-edge bg-ground/60 px-4 py-2.5">
       <span class="h-3 w-3 rounded-full bg-[#ff5f57]"></span>
       <span class="h-3 w-3 rounded-full bg-[#febc2e]"></span>
       <span class="h-3 w-3 rounded-full bg-[#28c840]"></span>
@@ -50,7 +50,7 @@
 
     <!-- Prompt -->
     <div class="flex items-center gap-2 border-t border-edge px-4 py-3">
-      <span class="font-mono text-[0.8rem] text-cyan" aria-hidden="true">$</span>
+      <span class="font-mono text-[0.8rem] text-accent-ink" aria-hidden="true">$</span>
       <input
         data-terminal-input
         type="text"
@@ -101,7 +101,7 @@
       const el = document.createElement('div');
       el.className = 'whitespace-pre-wrap break-words';
       const p = document.createElement('span');
-      p.className = 'text-cyan';
+      p.className = 'text-accent-ink';
       p.textContent = '$ ';
       const c = document.createElement('span');
       c.className = 'text-text';
@@ -118,7 +118,7 @@
       const a = document.createElement('a');
       a.href = href;
       a.textContent = label;
-      a.className = 'text-cyan underline underline-offset-2 hover:text-text';
+      a.className = 'text-accent-ink underline underline-offset-2 hover:text-text';
       if (external) {
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
@@ -194,7 +194,7 @@
         const el = document.createElement('div');
         el.className = 'whitespace-pre-wrap break-words';
         const key = document.createElement('span');
-        key.className = 'text-cyan';
+        key.className = 'text-accent-ink';
         key.textContent = `  ${k.padEnd(12)}`;
         const val = document.createElement('span');
         val.className = 'text-muted';

@@ -11,7 +11,9 @@ const fmt = (d: Date) =>
   d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
 // rotate tones so the row doesn't read as one block of colour
-const TONES = ['cyan', 'yellow', 'magenta'];
+/* One accent, deliberately. Rotating hues across cards was decoration; in this
+   system colour carries meaning, so the note cards all read the same. */
+const TONES = ['accent'];
 ---
 
 {

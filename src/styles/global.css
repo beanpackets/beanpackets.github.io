@@ -4,23 +4,38 @@
 @import '@fontsource/ibm-plex-mono/400.css';
 @import '@fontsource/ibm-plex-mono/500.css';
 
-/* Palette is the ANSI 16-colour set, tuned for contrast on a dark ground.
-   Every hue here is one a terminal actually emits. */
-@theme {
-  --color-ink: #0a0d14;
-  --color-surface: #10141d;
-  --color-surface-2: #161b26;
-  --color-edge: #232a38;
-  --color-edge-bright: #36415a;
-  --color-text: #e8edf4;
-  --color-muted: #8a95a8;
+/* Editorial split. A warm paper ground, a neutral ramp that stays warm all the
+   way down, and exactly one accent. Colour is spent on the accent and on status,
+   never on decoration. Light is the primary mode; dark is a full counterpart,
+   not an afterthought.
 
-  --color-red: #f4626a;
-  --color-green: #46d17f;
-  --color-yellow: #eab130;
-  --color-blue: #5b9dff;
-  --color-magenta: #c77dff;
-  --color-cyan: #2dd4e8;
+   Values below are the LIGHT ramp. The dark ramp overrides the same names in the
+   prefers-color-scheme block further down, so components never branch on mode. */
+@theme {
+  --color-ground: #f5f1ec;
+  --color-surface: #fbf8f4;
+  --color-surface-2: #f0ebe4;
+  --color-edge: #e2dad0;
+  --color-edge-bright: #c6bbac;
+  --color-text: #14110f;
+  --color-muted: #6b615a;
+
+  /* Accent. --accent is for fills, rules and blocks; --accent-ink is the darker
+     cut used whenever the accent carries text, because #e4572e on paper is
+     3.5:1 and fails body copy. */
+  --color-accent: #e4572e;
+  --color-accent-ink: #a83a17;
+  /* Text knocked out of an accent fill. Stays dark in both modes, because the
+     accent is orange in both. 4.88:1 on #e4572e, 6.36:1 on the dark-mode
+     #ff6b3d — passes AA for body text on either. */
+  --color-on-accent: #2b0e04;
+
+  /* Status. These mean something: green resolved, amber in progress, blue
+     informational. Never use them decoratively. */
+  --color-green: #326b3f;
+  --color-yellow: #7f5709;
+  --color-blue: #27527d;
+  --color-red: #9e2b20;
 
   --font-display: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, sans-serif;
@@ -28,10 +43,37 @@
 }
 
 @layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  /* Dark counterpart. Same token names, flipped ramp. The accent brightens
+     because #e4572e goes muddy on a dark ground. */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+
+      --color-ground: #14110f;
+      --color-surface: #1c1815;
+      --color-surface-2: #241f1b;
+      --color-edge: #322b25;
+      --color-edge-bright: #4d423a;
+      --color-text: #f5f1ec;
+      --color-muted: #a2968c;
+
+      --color-accent: #ff6b3d;
+      --color-accent-ink: #ff8b63;
+
+      --color-green: #5fbf74;
+      --color-yellow: #d9a233;
+      --color-blue: #74a8e0;
+      --color-red: #e8695c;
+    }
+  }
+
   html {
     scroll-behavior: smooth;
     scroll-padding-top: 5rem;
-    color-scheme: dark;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -48,18 +90,20 @@
   }
 
   body {
-    background-color: var(--color-ink);
+    background-color: var(--color-ground);
     color: var(--color-text);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
 
+  /* Editorial headings: tight tracking, and leading near 1 at display sizes.
+     Line-height is set at the usage site for the hero; this is the floor. */
   h1,
   h2,
   h3,
   h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     text-wrap: balance;
   }
 
@@ -68,12 +112,12 @@
   }
 
   ::selection {
-    background: color-mix(in oklab, var(--color-cyan) 30%, transparent);
-    color: #fff;
+    background: color-mix(in oklab, var(--color-accent) 26%, transparent);
+    color: var(--color-text);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-cyan);
+    outline: 2px solid var(--color-accent);
     outline-offset: 3px;
     border-radius: 2px;
   }
@@ -85,31 +129,36 @@
 }
 
 @layer components {
-  /* Every tinted element reads --tone. Default cyan; set data-tone to change it. */
+  /* Every tinted element reads --tone. Default accent; set data-tone to change
+     it. The status hues are the only alternatives, and they carry meaning. */
   :root {
-    --tone: var(--color-cyan);
+    --tone: var(--color-accent);
+    --tone-ink: var(--color-accent-ink);
   }
-  [data-tone='red'] {
-    --tone: var(--color-red);
+  [data-tone='accent'] {
+    --tone: var(--color-accent);
+    --tone-ink: var(--color-accent-ink);
   }
   [data-tone='green'] {
     --tone: var(--color-green);
+    --tone-ink: var(--color-green);
   }
   [data-tone='yellow'] {
     --tone: var(--color-yellow);
+    --tone-ink: var(--color-yellow);
   }
   [data-tone='blue'] {
     --tone: var(--color-blue);
+    --tone-ink: var(--color-blue);
   }
-  [data-tone='magenta'] {
-    --tone: var(--color-magenta);
-  }
-  [data-tone='cyan'] {
-    --tone: var(--color-cyan);
+  [data-tone='red'] {
+    --tone: var(--color-red);
+    --tone-ink: var(--color-red);
   }
 
+  /* Tinted TEXT always uses the ink cut, never the raw tone. */
   .tone-text {
-    color: var(--tone);
+    color: var(--tone-ink);
   }
 
   .shell {
@@ -125,26 +174,52 @@
     }
   }
 
-  /* Glass: floating surfaces only (nav, terminal, mobile menu).
-     Declare backdrop-filter unprefixed only. Adding -webkit- by hand makes
-     Lightning CSS drop the standard property, which breaks current Chromium. */
+  /* Hero split. The copy column has to start exactly where .shell starts, or
+     the headline sits off the page grid that every section below it uses.
+     Measure against the section via cqw, not vw: vw includes the scrollbar,
+     which pushed the headline 5px right of every other heading. */
+  .hero-split {
+    container-type: inline-size;
+  }
+
+  .hero-copy {
+    padding-left: max(1.25rem, calc((100cqw - 72rem) / 2));
+  }
+
+  @media (min-width: 768px) {
+    .hero-copy {
+      padding-left: max(2rem, calc((100cqw - 72rem) / 2));
+    }
+  }
+
+  /* Floating surfaces only (nav, terminal, mobile menu). Declare
+     backdrop-filter unprefixed only. Adding -webkit- by hand makes Lightning
+     CSS drop the standard property, which breaks current Chromium. */
   .glass {
-    background-color: color-mix(in oklab, var(--color-ink) 72%, transparent);
-    backdrop-filter: blur(16px) saturate(180%);
-    box-shadow: inset 0 1px 0 0 color-mix(in oklab, #fff 8%, transparent);
+    background-color: color-mix(in oklab, var(--color-ground) 82%, transparent);
+    backdrop-filter: blur(16px) saturate(140%);
+    box-shadow: inset 0 -1px 0 0 var(--color-edge);
   }
 
   .glass-panel {
-    background-color: color-mix(in oklab, var(--color-surface) 84%, transparent);
-    backdrop-filter: blur(20px) saturate(180%);
+    background-color: color-mix(in oklab, var(--color-surface) 92%, transparent);
+    backdrop-filter: blur(20px) saturate(140%);
     box-shadow:
-      inset 0 1px 0 0 color-mix(in oklab, #fff 10%, transparent),
-      0 24px 80px -24px rgba(0, 0, 0, 0.85);
+      inset 0 1px 0 0 color-mix(in oklab, #fff 40%, transparent),
+      0 24px 60px -28px rgba(20, 17, 15, 0.35);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .glass-panel {
+      box-shadow:
+        inset 0 1px 0 0 color-mix(in oklab, #fff 8%, transparent),
+        0 24px 80px -24px rgba(0, 0, 0, 0.8);
+    }
   }
 
   @supports not (backdrop-filter: blur(1px)) {
     .glass {
-      background-color: var(--color-ink);
+      background-color: var(--color-ground);
     }
     .glass-panel {
       background-color: var(--color-surface);
@@ -159,27 +234,28 @@
     height: 2px;
     transform-origin: 0 50%;
     transform: scaleX(0);
-    background: linear-gradient(
-      90deg,
-      var(--color-blue),
-      var(--color-cyan) 35%,
-      var(--color-green) 68%,
-      var(--color-yellow)
-    );
+    background: var(--color-accent);
     will-change: transform;
     pointer-events: none;
   }
 
-  /* Noise over everything. Flat dark surfaces band without it. */
+  /* Paper tooth. Far subtler than the old dark-ground grain — on a light
+     surface anything above ~2% reads as dirt rather than texture. */
   .grain::after {
     content: '';
     position: fixed;
     inset: 0;
     z-index: 35;
     pointer-events: none;
-    opacity: 0.03;
+    opacity: 0.02;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 140px 140px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .grain::after {
+      opacity: 0.035;
+    }
   }
 
   .grid-texture {
@@ -192,11 +268,11 @@
     position: absolute;
     inset: 0;
     z-index: -1;
-    background-image: radial-gradient(circle at center, var(--color-edge) 1px, transparent 1px);
+    background-image: radial-gradient(circle at center, var(--color-edge-bright) 1px, transparent 1px);
     background-size: 34px 34px;
     -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 20%, transparent 78%);
     mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 20%, transparent 78%);
-    opacity: 0.5;
+    opacity: 0.45;
     pointer-events: none;
   }
 
@@ -204,7 +280,7 @@
      6px on data-ish blocks, 10px on feature cards, 4px on chips. */
   .panel {
     position: relative;
-    background: linear-gradient(180deg, var(--color-surface-2), var(--color-surface));
+    background: var(--color-surface);
     border: 1px solid var(--color-edge);
     border-radius: 10px;
     transition:
@@ -213,10 +289,16 @@
   }
 
   .panel:hover {
-    border-color: color-mix(in oklab, var(--tone) 42%, var(--color-edge));
-    box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.4),
-      0 14px 34px -14px rgba(0, 0, 0, 0.7);
+    border-color: color-mix(in oklab, var(--tone) 50%, var(--color-edge));
+    box-shadow: 0 10px 28px -16px rgba(20, 17, 15, 0.28);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .panel:hover {
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.4),
+        0 14px 34px -14px rgba(0, 0, 0, 0.7);
+    }
   }
 
   /* Cursor spotlight, tinted per card. --mx/--my come from BaseLayout. */
@@ -228,7 +310,7 @@
     border-radius: inherit;
     background: radial-gradient(
       320px circle at var(--mx, 50%) var(--my, 50%),
-      color-mix(in oklab, var(--tone) 13%, transparent),
+      color-mix(in oklab, var(--tone) 9%, transparent),
       transparent 66%
     );
     opacity: 0;
@@ -241,7 +323,7 @@
   }
 
   .panel-flat {
-    background: var(--color-surface);
+    background: var(--color-surface-2);
     border: 1px solid var(--color-edge);
     border-radius: 6px;
   }
@@ -252,9 +334,15 @@
   }
 
   .elevate {
-    box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.35),
-      0 8px 24px -12px rgba(0, 0, 0, 0.65);
+    box-shadow: 0 8px 24px -14px rgba(20, 17, 15, 0.3);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .elevate {
+      box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.35),
+        0 8px 24px -12px rgba(0, 0, 0, 0.65);
+    }
   }
 
   .card-art {
@@ -270,16 +358,28 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.3;
+    opacity: 0.14;
     transform: scale(1.02);
     transition:
       opacity 0.5s,
       transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
+  @media (prefers-color-scheme: dark) {
+    .card-art img {
+      opacity: 0.3;
+    }
+  }
+
   .group:hover .card-art img {
-    opacity: 0.46;
+    opacity: 0.24;
     transform: scale(1.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .group:hover .card-art img {
+      opacity: 0.46;
+    }
   }
 
   .card-art::after {
@@ -288,8 +388,8 @@
     inset: 0;
     background: linear-gradient(
       180deg,
-      color-mix(in oklab, var(--color-surface) 60%, transparent),
-      color-mix(in oklab, var(--color-surface) 88%, transparent) 55%,
+      color-mix(in oklab, var(--color-surface) 55%, transparent),
+      color-mix(in oklab, var(--color-surface) 86%, transparent) 55%,
       var(--color-surface)
     );
   }
@@ -297,18 +397,18 @@
   .eyebrow {
     font-family: var(--font-mono);
     font-size: 0.75rem;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--tone);
+    color: var(--tone-ink);
   }
 
   .chip {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    border: 1px solid color-mix(in oklab, var(--tone) 26%, var(--color-edge));
-    background: color-mix(in oklab, var(--tone) 9%, transparent);
-    color: color-mix(in oklab, var(--tone) 82%, #fff);
+    border: 1px solid color-mix(in oklab, var(--tone) 32%, var(--color-edge));
+    background: color-mix(in oklab, var(--tone) 8%, transparent);
+    color: var(--tone-ink);
     border-radius: 4px;
     padding: 0.15rem 0.5rem;
     font-family: var(--font-mono);
@@ -360,7 +460,7 @@
   }
 
   .prose-notes a {
-    color: var(--color-cyan);
+    color: var(--color-accent-ink);
     text-decoration: underline;
     text-underline-offset: 3px;
   }
@@ -379,7 +479,7 @@
   }
 
   .prose-notes li::marker {
-    color: var(--color-blue);
+    color: var(--color-accent);
   }
 
   .prose-notes li + li {
@@ -389,23 +489,23 @@
   .prose-notes code {
     font-family: var(--font-mono);
     font-size: 0.86em;
-    color: var(--color-yellow);
-    background: color-mix(in oklab, var(--color-yellow) 8%, transparent);
+    color: var(--color-accent-ink);
+    background: color-mix(in oklab, var(--color-accent) 7%, transparent);
     border: 1px solid var(--color-edge);
     border-radius: 3px;
     padding: 0.1em 0.36em;
   }
 
   .prose-notes pre {
-    background: var(--color-surface);
+    background: var(--color-surface-2);
     border: 1px solid var(--color-edge);
-    border-left: 2px solid var(--color-green);
+    border-left: 2px solid var(--color-accent);
     border-radius: 6px;
     padding: 1.1rem 1.25rem;
     overflow-x: auto;
     font-size: 0.85rem;
     line-height: 1.65;
-    color: color-mix(in oklab, var(--color-green) 62%, var(--color-text));
+    color: var(--color-text);
   }
 
   .prose-notes pre code {
@@ -417,7 +517,7 @@
   }
 
   .prose-notes blockquote {
-    border-left: 2px solid var(--color-magenta);
+    border-left: 2px solid var(--color-edge-bright);
     padding-left: 1.1em;
     font-style: italic;
   }

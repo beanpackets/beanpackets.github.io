@@ -28,7 +28,7 @@ const fmt = (d: Date) =>
   <main id="main" class="shell pt-32 pb-20 sm:pt-40">
     <a
       href="/notes/"
-      class="inline-flex items-center gap-2 font-mono text-xs text-muted transition-colors hover:text-cyan"
+      class="inline-flex items-center gap-2 font-mono text-xs text-muted transition-colors hover:text-accent-ink"
     >
       <Icon name="arrow" class="h-3.5 w-3.5 rotate-180" />
       All lab notes
@@ -43,7 +43,7 @@ const fmt = (d: Date) =>
           <div class="flex flex-wrap gap-2">
             {
               note.data.tags.map((t) => (
-                <span class="rounded-md border border-edge bg-ink/50 px-2 py-0.5 font-mono text-[0.68rem] text-muted">
+                <span class="rounded-md border border-edge bg-ground/50 px-2 py-0.5 font-mono text-[0.68rem] text-muted">
                   {t}
                 </span>
               ))
@@ -53,7 +53,7 @@ const fmt = (d: Date) =>
 
         <h1 class="mt-4 text-3xl leading-tight font-semibold sm:text-4xl">{note.data.title}</h1>
         <p class="mt-4 text-base leading-relaxed text-muted sm:text-lg">{note.data.summary}</p>
-        <div class="mt-8 h-px w-full bg-[linear-gradient(90deg,var(--color-cyan),transparent)] opacity-40"></div>
+        <div class="mt-8 h-px w-full bg-[linear-gradient(90deg,var(--color-accent),transparent)] opacity-40"></div>
       </header>
 
       <div class="prose-notes mt-10 max-w-3xl">
@@ -65,7 +65,7 @@ const fmt = (d: Date) =>
       <p class="text-sm text-muted">
         Notes like this are how I study. If you're hiring for IT support or networking in
         San Diego,
-        <a href="/#contact" class="text-cyan link-underline">get in touch</a>.
+        <a href="/#contact" class="text-accent-ink link-underline">get in touch</a>.
       </p>
     </aside>
   </main>

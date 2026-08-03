@@ -1,57 +1,31 @@
 ---
-import { Image } from 'astro:assets';
-import heroArt from '../assets/hero-network.png';
 import { SITE } from '../data/site.js';
 import Icon from './Icon.astro';
+
+/* Editorial split. Type sits on the page grid; the accent panel bleeds off the
+   right edge. Gutter alignment is handled by .hero-copy in global.css. */
 ---
 
-<section class="relative isolate flex min-h-[88svh] items-center overflow-hidden pt-16">
-  <!-- Base artwork. If JS never runs, this alone carries the section. -->
-  <Image
-    src={heroArt}
-    alt=""
-    widths={[768, 1100, 1376]}
-    sizes="100vw"
-    quality={72}
-    loading="eager"
-    fetchpriority="high"
-    class="absolute inset-0 -z-20 h-full w-full object-cover object-right"
-  />
-
-  <!-- Animated packet layer, drawn on top of the artwork. -->
-  <canvas
-    data-network-canvas
-    aria-hidden="true"
-    class="absolute inset-0 -z-10 h-full w-full opacity-0 transition-opacity duration-1000"
-  ></canvas>
-
-  <!-- Legibility scrims: darken left for text, fade bottom into the page. -->
-  <div
-    class="absolute inset-0 -z-10 bg-[linear-gradient(100deg,var(--color-ink)_18%,color-mix(in_oklab,var(--color-ink)_82%,transparent)_48%,transparent_88%)]"
-  >
-  </div>
-  <div
-    class="absolute inset-x-0 bottom-0 -z-10 h-40 bg-[linear-gradient(to_top,var(--color-ink),transparent)]"
-  >
-  </div>
-
-  <div class="shell relative w-full py-20">
+<section
+  class="hero-split relative grid min-h-[88svh] grid-rows-[1fr_auto] pt-16 md:grid-cols-[1.55fr_1fr] md:grid-rows-1"
+>
+  <div class="hero-copy flex items-center py-16 pr-5 md:py-24 md:pr-12">
     <div class="max-w-2xl">
-      <p class="mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-xs tracking-wide uppercase">
+      <p class="mb-7 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-xs tracking-wider uppercase">
         <span class="flex items-center gap-2 text-green">
           <span class="inline-block h-1.5 w-1.5 rounded-full bg-green"></span>
           {SITE.availability}
         </span>
-        <span class="text-edge-bright">/</span>
+        <span class="text-muted" aria-hidden="true">/</span>
         <span class="text-muted">{SITE.location}</span>
       </p>
 
-      <h1 class="text-[clamp(2.6rem,7.5vw,4.75rem)] leading-[1.02] font-semibold">
+      <h1 class="text-[clamp(2.9rem,8.2vw,5.25rem)] leading-[0.92] font-semibold tracking-[-0.035em]">
         Matthew<br />Bean
       </h1>
 
-      <p class="mt-6 font-display text-[clamp(1.15rem,2.6vw,1.6rem)] leading-snug text-text/90">
-        <span class="text-blue">IT support</span> &amp; <span class="text-cyan">networking</span>
+      <p class="mt-7 font-display text-[clamp(1.15rem,2.6vw,1.55rem)] leading-snug">
+        IT support <span class="text-muted">&amp;</span> networking
       </p>
 
       <p class="mt-5 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
@@ -62,14 +36,14 @@ import Icon from './Icon.astro';
       <div class="mt-10 flex flex-wrap items-center gap-3">
         <a
           href="#work"
-          class="group inline-flex items-center gap-2 rounded-xl bg-cyan px-5 py-3 text-sm font-semibold text-ink transition-all hover:bg-cyan/90 hover:shadow-[0_0_28px_-6px_var(--color-cyan)]"
+          class="group inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-on-accent transition-colors hover:bg-accent-ink hover:text-ground"
         >
           View my work
           <Icon name="arrow" class="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         </a>
         <a
           href={SITE.resumeFile}
-          class="inline-flex items-center gap-2 rounded-xl border border-edge-bright bg-surface/60 px-5 py-3 text-sm font-medium text-text backdrop-blur-sm transition-colors hover:border-cyan/60 hover:text-cyan"
+          class="inline-flex items-center gap-2 rounded-lg border border-edge-bright px-5 py-3 text-sm font-medium text-text transition-colors hover:border-accent hover:text-accent-ink"
         >
           <Icon name="download" class="h-4 w-4" />
           Download résumé
@@ -79,10 +53,10 @@ import Icon from './Icon.astro';
       <button
         type="button"
         data-terminal-open
-        class="mt-12 hidden items-center gap-2 font-mono text-xs text-muted/70 transition-colors hover:text-cyan md:inline-flex"
+        class="mt-12 hidden items-center gap-2 font-mono text-xs text-muted transition-colors hover:text-accent-ink md:inline-flex"
       >
         <span
-          class="inline-flex items-center rounded border border-edge bg-surface/60 px-1.5 py-0.5 text-[0.7rem]"
+          class="inline-flex items-center rounded border border-edge bg-surface-2 px-1.5 py-0.5 text-[0.7rem]"
           aria-hidden="true"
         >
           ~
@@ -91,12 +65,29 @@ import Icon from './Icon.astro';
       </button>
     </div>
   </div>
+
+  <!-- Accent panel. Bleeds to the right edge on desktop, becomes a band on
+       mobile. With JS off this stays a clean field of colour, which is a
+       perfectly good fallback — no artwork needed. -->
+  <div class="relative isolate min-h-[22svh] overflow-hidden bg-accent md:min-h-0">
+    <canvas
+      data-network-canvas
+      aria-hidden="true"
+      class="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-1000"
+    ></canvas>
+    <span
+      class="absolute bottom-5 left-5 font-mono text-[0.7rem] tracking-[0.14em] text-on-accent uppercase opacity-75 md:bottom-8 md:left-8"
+    >
+      CCNA in progress
+    </span>
+  </div>
 </section>
 
 <script>
-  /* Drifting node mesh with packets crossing the links.
-     Low node count, DPR capped at 2, pauses off-screen and on hidden tabs,
-     never runs under reduced-motion. Static art underneath is the fallback. */
+  /* Drifting node mesh with packets crossing the links, drawn in the paper
+     colour on top of the accent panel. Low node count, DPR capped at 2, pauses
+     off-screen and on hidden tabs, never runs under reduced-motion. Without JS
+     the panel is a flat field of accent, which is the intended fallback. */
   const canvas = document.querySelector<HTMLCanvasElement>('[data-network-canvas]');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -105,16 +96,9 @@ import Icon from './Icon.astro';
 
     if (ctx) {
       const LINK_DIST = 165;
-      const LINE = '45, 212, 232';
-      // ANSI hues, weighted so cyan still dominates
-      const HUES = [
-        '45, 212, 232',
-        '45, 212, 232',
-        '70, 209, 127',
-        '91, 157, 255',
-        '234, 177, 48',
-        '199, 125, 255',
-      ];
+      // Paper, knocked out of the accent. One colour only — the mesh is
+      // texture, not information, so it does not get to spend the palette.
+      const LINE = '245, 241, 236';
 
       let width = 0;
       let height = 0;
@@ -122,7 +106,7 @@ import Icon from './Icon.astro';
       let running = false;
 
       type Node = { x: number; y: number; vx: number; vy: number; r: number };
-      type Packet = { a: number; b: number; t: number; speed: number; hue: string };
+      type Packet = { a: number; b: number; t: number; speed: number };
 
       let nodes: Node[] = [];
       let packets: Packet[] = [];
@@ -139,7 +123,7 @@ import Icon from './Icon.astro';
         ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         // Scale node count with area, but keep a hard ceiling for low-end GPUs.
-        const count = Math.min(46, Math.max(16, Math.round((width * height) / 26000)));
+        const count = Math.min(46, Math.max(14, Math.round((width * height) / 22000)));
         nodes = Array.from({ length: count }, () => ({
           x: rand(0, width),
           y: rand(0, height),
@@ -155,13 +139,7 @@ import Icon from './Icon.astro';
         const a = Math.floor(Math.random() * nodes.length);
         let b = Math.floor(Math.random() * nodes.length);
         if (b === a) b = (b + 1) % nodes.length;
-        return {
-          a,
-          b,
-          t: Math.random(),
-          speed: rand(0.0018, 0.0052),
-          hue: HUES[Math.floor(Math.random() * HUES.length)],
-        };
+        return { a, b, t: Math.random(), speed: rand(0.0018, 0.0052) };
       }
 
       function frame() {
@@ -184,7 +162,7 @@ import Icon from './Icon.astro';
             const dy = nodes[i].y - nodes[j].y;
             const dist = Math.hypot(dx, dy);
             if (dist >= LINK_DIST) continue;
-            const alpha = (1 - dist / LINK_DIST) * 0.22;
+            const alpha = (1 - dist / LINK_DIST) * 0.3;
             ctx!.strokeStyle = `rgba(${LINE}, ${alpha})`;
             ctx!.beginPath();
             ctx!.moveTo(nodes[i].x, nodes[i].y);
@@ -195,7 +173,7 @@ import Icon from './Icon.astro';
 
         // Nodes.
         for (const n of nodes) {
-          ctx!.fillStyle = `rgba(${LINE}, 0.55)`;
+          ctx!.fillStyle = `rgba(${LINE}, 0.6)`;
           ctx!.beginPath();
           ctx!.arc(n.x, n.y, n.r, 0, Math.PI * 2);
           ctx!.fill();
@@ -219,21 +197,12 @@ import Icon from './Icon.astro';
 
           const x = from.x + (to.x - from.x) * p.t;
           const y = from.y + (to.y - from.y) * p.t;
-          const rgb = p.hue;
           // Fade in and out at the endpoints so packets never pop.
           const fade = Math.sin(p.t * Math.PI);
 
-          const glow = ctx!.createRadialGradient(x, y, 0, x, y, 9);
-          glow.addColorStop(0, `rgba(${rgb}, ${0.85 * fade})`);
-          glow.addColorStop(1, `rgba(${rgb}, 0)`);
-          ctx!.fillStyle = glow;
+          ctx!.fillStyle = `rgba(${LINE}, ${0.95 * fade})`;
           ctx!.beginPath();
-          ctx!.arc(x, y, 9, 0, Math.PI * 2);
-          ctx!.fill();
-
-          ctx!.fillStyle = `rgba(255, 255, 255, ${0.9 * fade})`;
-          ctx!.beginPath();
-          ctx!.arc(x, y, 1.5, 0, Math.PI * 2);
+          ctx!.arc(x, y, 2.1, 0, Math.PI * 2);
           ctx!.fill();
         }
 
@@ -259,7 +228,7 @@ import Icon from './Icon.astro';
       }
 
       build();
-      canvas.classList.replace('opacity-0', 'opacity-60');
+      canvas.classList.replace('opacity-0', 'opacity-100');
       sync();
 
       if ('IntersectionObserver' in window) {

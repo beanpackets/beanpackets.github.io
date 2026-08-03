@@ -7,11 +7,11 @@ import { SITE } from '../data/site.js';
 const facts = [
   { icon: 'location', label: 'Based in', value: SITE.location, tone: 'blue' },
   { icon: 'clock', label: 'Availability', value: 'Full-time, on-site', tone: 'green' },
-  { icon: 'book', label: 'Studying', value: 'Cisco CCNA', tone: 'cyan' },
+  { icon: 'book', label: 'Studying', value: 'Cisco CCNA', tone: 'accent' },
 ];
 ---
 
-<Section id="about" tone="magenta" eyebrow="whoami" title="About">
+<Section id="about" tone="accent" eyebrow="whoami" title="About">
   <div class="grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-16">
     <div class="space-y-5" data-reveal-target>
       {ABOUT.map((para) => <p class="leading-relaxed text-muted sm:text-[1.0625rem]">{para}</p>)}
@@ -42,7 +42,7 @@ const facts = [
               <li>
                 <p class="text-sm font-medium text-text">{e.school}</p>
                 <p class="text-sm text-muted">{e.detail}</p>
-                <p class="font-mono text-xs text-muted/70">{e.period}</p>
+                <p class="font-mono text-xs text-muted">{e.period}</p>
               </li>
             ))
           }
