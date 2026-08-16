@@ -1,0 +1,367 @@
+---
+import Section from './Section.astro';
+
+/* Four generative modes on one canvas. No audio input — the spectrum is
+   procedural, so the section never asks for mic permission. */
+---
+
+<Section
+  id="canvas"
+  tone="accent"
+  eyebrow="Experiment"
+  title="Generative canvas"
+  lead="Four ways to draw with a loop and some trigonometry. Pure canvas 2D, no libraries."
+>
+  <div class="panel overflow-hidden" data-reveal-target>
+    <div class="viz-frame relative">
+      <canvas data-viz class="block h-[300px] w-full sm:h-[420px]"></canvas>
+      <div class="viz-scan pointer-events-none absolute inset-0" aria-hidden="true"></div>
+      <div class="viz-vig pointer-events-none absolute inset-0" aria-hidden="true"></div>
+      <p
+        class="pointer-events-none absolute top-3 left-4 font-mono text-[0.65rem] tracking-[0.18em] text-accent-ink uppercase opacity-70"
+        data-viz-label
+      >
+        Flow field
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-edge p-4">
+      <div class="flex flex-wrap gap-1.5" role="group" aria-label="Visualisation mode">
+        <button type="button" class="viz-mode" data-viz-mode="0" aria-pressed="true">Flow</button>
+        <button type="button" class="viz-mode" data-viz-mode="1" aria-pressed="false">Warp</button>
+        <button type="button" class="viz-mode" data-viz-mode="2" aria-pressed="false">Scope</button>
+        <button type="button" class="viz-mode" data-viz-mode="3" aria-pressed="false">Spectrum</button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label for="viz-speed" class="font-mono text-[0.62rem] tracking-[0.14em] text-muted uppercase">
+          Speed
+        </label>
+        <input id="viz-speed" type="range" min="20" max="220" value="100" class="viz-range" />
+      </div>
+
+      <div class="ml-auto flex gap-1.5">
+        <button type="button" class="viz-act" data-viz-seed>Randomise</button>
+        <button type="button" class="viz-act" data-viz-play aria-pressed="true">Pause</button>
+      </div>
+    </div>
+  </div>
+</Section>
+
+<style>
+  .viz-frame {
+    background: var(--color-ground);
+  }
+
+  .viz-scan {
+    opacity: 0.4;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.28) 0 1px,
+      transparent 1px 3px
+    );
+  }
+
+  .viz-vig {
+    background: radial-gradient(ellipse at center, transparent 45%, rgba(3, 10, 5, 0.8) 100%);
+  }
+
+  .viz-mode,
+  .viz-act {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: 4px;
+    border: 1px solid var(--color-edge);
+    color: var(--color-muted);
+    transition:
+      color 0.18s,
+      border-color 0.18s,
+      background-color 0.18s,
+      box-shadow 0.18s;
+  }
+
+  .viz-mode:hover,
+  .viz-act:hover {
+    color: var(--color-text);
+    border-color: var(--color-edge-bright);
+  }
+
+  .viz-mode[aria-pressed='true'] {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-on-accent);
+    box-shadow: 0 0 18px -4px rgba(57, 255, 20, 0.7);
+  }
+
+  .viz-range {
+    width: 6rem;
+    accent-color: var(--color-accent);
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-viz]');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (canvas) {
+    const ctx = canvas.getContext('2d', { alpha: false });
+
+    if (ctx) {
+      type Particle = { x: number; y: number; px: number; py: number; life: number };
+      type Star = { x: number; y: number; z: number; pz: number };
+
+      const LABELS = ['Flow field', 'Warp tunnel', 'Oscilloscope', 'Spectrum'];
+      const label = document.querySelector<HTMLElement>('[data-viz-label]');
+      const playBtn = document.querySelector<HTMLButtonElement>('[data-viz-play]');
+      const modeBtns = document.querySelectorAll<HTMLButtonElement>('[data-viz-mode]');
+
+      let width = 0;
+      let height = 0;
+      let mode = 0;
+      let speed = 1;
+      let t = 0;
+      let raf = 0;
+      let running = false;
+      let particles: Particle[] = [];
+      let stars: Star[] = [];
+      let seedA = Math.random() * 100;
+      let seedB = Math.random() * 100;
+
+      const spawn = (): Particle => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        px: 0,
+        py: 0,
+        life: 20 + Math.random() * 150,
+      });
+
+      function clear() {
+        ctx!.globalCompositeOperation = 'source-over';
+        ctx!.fillStyle = '#030a05';
+        ctx!.fillRect(0, 0, width, height);
+      }
+
+      function build() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const rect = canvas!.getBoundingClientRect();
+        width = rect.width;
+        height = rect.height;
+        canvas!.width = Math.round(width * dpr);
+        canvas!.height = Math.round(height * dpr);
+        ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+        clear();
+
+        const count = Math.min(340, Math.max(60, Math.round((width * height) / 2800)));
+        particles = Array.from({ length: count }, spawn);
+        stars = Array.from({ length: Math.round(count * 0.7) }, () => ({
+          x: (Math.random() - 0.5) * width,
+          y: (Math.random() - 0.5) * height,
+          z: Math.random() * width,
+          pz: 0,
+        }));
+      }
+
+      function angleAt(x: number, y: number) {
+        const a = Math.sin(x * 0.0042 + seedA + t * 0.22) + Math.cos(y * 0.0051 - seedB + t * 0.17);
+        const b = Math.sin((x + y) * 0.0027 + t * 0.11) * 1.4;
+        return (a + b) * 1.15;
+      }
+
+      function wash(alpha: number) {
+        ctx!.globalCompositeOperation = 'source-over';
+        ctx!.fillStyle = `rgba(3, 10, 5, ${alpha})`;
+        ctx!.fillRect(0, 0, width, height);
+      }
+
+      function step() {
+        t += 0.016 * speed;
+
+        if (mode === 0) {
+          wash(0.075);
+          ctx!.globalCompositeOperation = 'lighter';
+          ctx!.lineWidth = 1.1;
+          for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            p.px = p.x;
+            p.py = p.y;
+            const a = angleAt(p.x, p.y);
+            p.x += Math.cos(a) * 1.9 * speed;
+            p.y += Math.sin(a) * 1.9 * speed;
+            p.life -= speed;
+            const hue = 104 + ((((a % 1) + 1) % 1) * 58);
+            ctx!.strokeStyle = `hsla(${hue}, 100%, 58%, 0.5)`;
+            ctx!.beginPath();
+            ctx!.moveTo(p.px, p.py);
+            ctx!.lineTo(p.x, p.y);
+            ctx!.stroke();
+            if (p.life < 0 || p.x < -20 || p.x > width + 20 || p.y < -20 || p.y > height + 20) {
+              particles[i] = spawn();
+            }
+          }
+        } else if (mode === 1) {
+          wash(0.2);
+          ctx!.globalCompositeOperation = 'lighter';
+          const cx = width / 2;
+          const cy = height / 2;
+          for (const s of stars) {
+            s.pz = s.z;
+            s.z -= 6 * speed;
+            if (s.z < 1) {
+              s.x = (Math.random() - 0.5) * width * 1.4;
+              s.y = (Math.random() - 0.5) * height * 1.4;
+              s.z = width;
+              s.pz = width;
+            }
+            const sx = cx + (s.x / s.z) * width * 0.9;
+            const sy = cy + (s.y / s.z) * width * 0.9;
+            const ex = cx + (s.x / s.pz) * width * 0.9;
+            const ey = cy + (s.y / s.pz) * width * 0.9;
+            const d = 1 - s.z / width;
+            ctx!.lineWidth = 0.4 + d * 2.2;
+            ctx!.strokeStyle = `hsla(${108 + d * 46}, 100%, ${48 + d * 30}%, ${0.22 + d * 0.68})`;
+            ctx!.beginPath();
+            ctx!.moveTo(ex, ey);
+            ctx!.lineTo(sx, sy);
+            ctx!.stroke();
+          }
+        } else if (mode === 2) {
+          wash(0.1);
+          ctx!.globalCompositeOperation = 'lighter';
+          const A = 3 + Math.sin(t * 0.13) * 2;
+          const B = 2 + Math.cos(t * 0.09) * 2;
+          const ph = t * 0.4;
+          const rx = width * 0.32;
+          const ry = height * 0.3;
+          const cx = width / 2;
+          const cy = height / 2;
+          // Wide-and-dim, medium, then a thin near-white core. Cheaper and more
+          // convincing than shadowBlur.
+          const widths = [3.2, 1.6, 0.8];
+          const cols = ['rgba(57,255,20,.16)', 'rgba(0,255,157,.4)', 'rgba(234,255,232,.85)'];
+          for (let layer = 0; layer < 3; layer++) {
+            ctx!.lineWidth = widths[layer];
+            ctx!.strokeStyle = cols[layer];
+            ctx!.beginPath();
+            for (let u = 0; u <= 360; u++) {
+              const th = (u / 360) * Math.PI * 2;
+              const X = cx + Math.sin(A * th + ph) * rx;
+              const Y = cy + Math.sin(B * th) * ry;
+              if (u) ctx!.lineTo(X, Y);
+              else ctx!.moveTo(X, Y);
+            }
+            ctx!.stroke();
+          }
+        } else {
+          wash(0.3);
+          ctx!.globalCompositeOperation = 'lighter';
+          const N = width < 480 ? 32 : 56;
+          const gap = 2;
+          const bw = (width - gap * (N - 1)) / N;
+          const base = height * 0.78;
+          for (let i = 0; i < N; i++) {
+            const f = i / N;
+            let v =
+              Math.abs(Math.sin(t * 1.9 + f * 7.1)) * 0.5 +
+              Math.abs(Math.sin(t * 0.7 + f * 13.3)) * 0.32 +
+              Math.abs(Math.sin(t * 3.3 - f * 4.2)) * 0.18;
+            v *= (1 - f * 0.55) * (0.55 + 0.45 * Math.sin(f * Math.PI));
+            const h = Math.max(2, v * height * 0.62);
+            const x = i * (bw + gap);
+            const hue = 100 + f * 60;
+            ctx!.fillStyle = `hsla(${hue}, 100%, 55%, 0.85)`;
+            ctx!.fillRect(x, base - h, bw, h);
+            ctx!.fillStyle = `hsla(${hue}, 100%, 55%, 0.16)`;
+            ctx!.fillRect(x, base + 3, bw, h * 0.42);
+            ctx!.fillStyle = 'rgba(234,255,232,.95)';
+            ctx!.fillRect(x, base - h - 2, bw, 2);
+          }
+        }
+      }
+
+      function frame() {
+        if (!running) return;
+        step();
+        raf = requestAnimationFrame(frame);
+      }
+
+      let onScreen = false;
+      let tabVisible = !document.hidden;
+      let wanted = !reduced;
+
+      function sync() {
+        if (wanted && onScreen && tabVisible) {
+          if (running) return;
+          running = true;
+          raf = requestAnimationFrame(frame);
+        } else if (running) {
+          running = false;
+          cancelAnimationFrame(raf);
+        }
+      }
+
+      build();
+
+      if (reduced) {
+        for (let i = 0; i < 300; i++) step();
+      }
+
+      for (const btn of modeBtns) {
+        btn.addEventListener('click', () => {
+          mode = Number(btn.dataset.vizMode);
+          for (const o of modeBtns) o.setAttribute('aria-pressed', String(o === btn));
+          if (label) label.textContent = LABELS[mode];
+          clear();
+          if (reduced) for (let i = 0; i < 300; i++) step();
+        });
+      }
+
+      document.getElementById('viz-speed')?.addEventListener('input', (e) => {
+        speed = Number((e.target as HTMLInputElement).value) / 100;
+      });
+
+      document.querySelector('[data-viz-seed]')?.addEventListener('click', () => {
+        seedA = Math.random() * 100;
+        seedB = Math.random() * 100;
+        t = Math.random() * 50;
+        build();
+        if (reduced) for (let i = 0; i < 300; i++) step();
+      });
+
+      playBtn?.addEventListener('click', () => {
+        wanted = !wanted;
+        playBtn.textContent = wanted ? 'Pause' : 'Play';
+        playBtn.setAttribute('aria-pressed', String(wanted));
+        sync();
+      });
+
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(
+          ([entry]) => {
+            onScreen = entry.isIntersecting;
+            sync();
+          },
+          { threshold: 0 }
+        ).observe(canvas);
+      } else {
+        onScreen = true;
+        sync();
+      }
+
+      document.addEventListener('visibilitychange', () => {
+        tabVisible = !document.hidden;
+        sync();
+      });
+
+      let resizeTimer: number;
+      window.addEventListener('resize', () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => {
+          build();
+          if (reduced) for (let i = 0; i < 300; i++) step();
+        }, 180);
+      });
+    }
+  }
+</script>

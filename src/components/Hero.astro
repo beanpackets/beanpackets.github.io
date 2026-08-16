@@ -32,11 +32,8 @@ import Icon from './Icon.astro';
 
   <div class="hero-copy relative z-10 flex items-center py-16 pr-5 md:py-24 md:pr-12">
     <div class="max-w-2xl">
-      <p class="mb-7 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-xs tracking-wider uppercase">
-        <span class="flex items-center gap-2 text-accent-ink">
-          <span class="hero-pip inline-block h-1.5 w-1.5 rounded-full bg-accent"></span>
-          {SITE.availability}
-        </span>
+      <p class="mb-7 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+        <span class="text-accent-ink">{SITE.availability}</span>
         <span class="text-muted" aria-hidden="true">/</span>
         <span class="text-muted">{SITE.location}</span>
       </p>
@@ -88,10 +85,6 @@ import Icon from './Icon.astro';
   </div>
 
   <div class="relative z-10">
-    <div class="shell flex flex-wrap justify-between gap-4 pb-5 font-mono text-[0.7rem] tracking-[0.2em] text-accent-ink/70 uppercase">
-      <span>System online</span>
-      <span>CCNA in progress</span>
-    </div>
     <hr class="laser" />
   </div>
 </section>
@@ -113,16 +106,6 @@ import Icon from './Icon.astro';
     }
   }
 
-  .hero-pip {
-    box-shadow: 0 0 10px var(--color-accent);
-    animation: pip 2.4s ease-in-out infinite;
-  }
-
-  @keyframes pip {
-    50% {
-      opacity: 0.25;
-    }
-  }
 </style>
 
 <script>
