@@ -5,8 +5,8 @@ import { CERTIFICATIONS } from '../data/resume.js';
 ---
 
 <Section id="certifications" variant="bare" tone="accent" title="Training" eyebrow="Certifications">
-  <!-- CCNA full width, the three finished certs 3-across -->
-  <ul class="grid gap-3 sm:grid-cols-3">
+  <!-- CCNA full width, the four finished certs 2-across -->
+  <ul class="grid gap-3 sm:grid-cols-2">
     {
       CERTIFICATIONS.map((c) => {
         const active = c.status === 'in-progress';
@@ -14,7 +14,7 @@ import { CERTIFICATIONS } from '../data/resume.js';
           <li
             data-tone={c.tone}
             data-reveal-target
-            class={`panel-flat tone-rule flex items-start gap-3.5 p-5 ${active ? 'sm:col-span-3' : ''}`}
+            class={`panel-flat tone-rule flex items-start gap-3.5 p-5 ${active ? 'sm:col-span-2' : ''}`}
           >
             <span class="tone-text mt-0.5">
               <Icon name={active ? 'clock' : 'check'} class="h-[18px] w-[18px]" />

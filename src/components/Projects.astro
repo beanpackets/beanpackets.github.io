@@ -19,22 +19,29 @@ const ART: Record<string, ImageMetadata> = {
 ---
 
 <Section id="work" variant="bare" tone="green" title="Home lab" eyebrow="Projects">
-  <!-- featured spans the row, the other three sit 3-across -->
+  <!-- featured spans the row, then three across, then a pair that closes the
+       last row: one standard card plus one double-wide. Six cards, no orphan. -->
   <div class="grid gap-4 md:grid-cols-3">
     {
       PROJECTS.map((p) => (
         <article
           data-tone={p.tone}
           data-reveal-target
-          class={`panel group relative flex flex-col overflow-hidden ${p.featured ? 'md:col-span-3' : ''}`}
+          class={`panel group relative flex flex-col overflow-hidden ${p.featured ? 'md:col-span-3' : ''} ${p.wide ? 'md:col-span-2' : ''}`}
         >
           {ART[p.icon] && (
             <div class="card-art" aria-hidden="true">
               <Image
                 src={ART[p.icon]}
                 alt=""
-                widths={p.featured ? [760, 1100] : [420, 760]}
-                sizes={p.featured ? '92vw' : '(min-width: 768px) 31vw, 92vw'}
+                widths={p.featured ? [760, 1100] : p.wide ? [560, 960] : [420, 760]}
+                sizes={
+                  p.featured
+                    ? '92vw'
+                    : p.wide
+                      ? '(min-width: 768px) 62vw, 92vw'
+                      : '(min-width: 768px) 31vw, 92vw'
+                }
                 quality={62}
                 loading="lazy"
               />

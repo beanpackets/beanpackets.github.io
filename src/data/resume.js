@@ -3,7 +3,7 @@
 
 export const ABOUT = [
   `I run help desk operations for a SaaS company. First contact for tickets, emails, chats, calls. Most days that means triaging in GitHub Issues, untangling login and permissions problems, reproducing bugs properly, and knowing when something is mine to fix and when it needs Tier 2.`,
-  `Before that, six years as a technical support specialist on a Salesforce CRM: custom fields, automated actions, agent records, plus the whole licensing and credentialing lifecycle running on top of it.`,
+  `Before that, six years as a technical support specialist and executive administrator on a Salesforce CRM: custom fields, automated actions, agent records, and user accounts end to end, from provisioning and permission sets through deactivation. The whole licensing and credentialing lifecycle ran on top of it.`,
   `I'm studying for the CCNA and I keep a home lab. DNS filtering, VPN, uptime monitoring. Enough PC builds and component-level repairs that boot/POST troubleshooting is muscle memory. San Diego, available full-time, on-site.`,
 ];
 
@@ -16,6 +16,7 @@ export const SKILLS = [
       'Windows 10/11 desktop administration',
       'Active Directory fundamentals',
       'Azure Virtual Desktop & Windows 365',
+      'Microsoft Intune fundamentals',
       'Linux fundamentals (home server)',
       'Basic virtualization concepts',
     ],
@@ -62,6 +63,7 @@ export const SKILLS = [
     tone: 'green',
     items: [
       'Help desk and ticketing operations',
+      'User provisioning, deactivation, permissions',
       'Troubleshooting and escalation',
       'SLA management',
       'Bug reproduction and documentation',
@@ -98,10 +100,27 @@ export const PROJECTS = [
     tags: ['Hardware', 'Diagnostics'],
   },
   {
+    title: 'FPV drones & 2.4 GHz',
+    tone: 'accent',
+    icon: 'signal',
+    summary:
+      'Quadcopters built and repaired from the frame up: soldering ESCs, motors, video transmitters, and wiring harnesses, then configuring flight controllers in Betaflight through the CLI and GUI, including failsafe. Bound 2.4 GHz control links and chased down dropouts by diagnosing interference, planning channel assignments, and range-testing to isolate where the signal actually died. Same for the video side, picking bands and channels and tuning antennas for a clean feed.',
+    tags: ['RF', '2.4 GHz', 'Soldering', 'Betaflight'],
+  },
+  {
+    title: 'Crypto & blockchain',
+    tone: 'blue',
+    icon: 'pulse',
+    summary:
+      'Built and maintain GPU mining rigs: component selection, assembly, overclock and thermal tuning, uptime monitoring. Self-custody wallets with hardware wallet setup, seed phrase practices, and transaction verification. Run blockchain nodes and work with on-chain and DeFi applications, alongside active trading, portfolio tracking, and market research.',
+    tags: ['GPU rigs', 'Self-custody', 'Nodes', 'DeFi'],
+  },
+  {
     title: 'This site',
     tone: 'accent',
     icon: 'code',
     repo: true,
+    wide: true,
     summary:
       'Astro and Tailwind, deployed to GitHub Pages by a hardened Actions pipeline: SHA-pinned actions, least-privilege permissions, strict CSP, no backend.',
     tags: ['Astro', 'Tailwind', 'CI/CD'],
@@ -112,7 +131,7 @@ export const EXPERIENCE = [
   {
     company: 'JoyPunk LLC',
     location: 'Long Beach, CA',
-    role: 'HelpDesk Support Technician',
+    role: 'Help Desk Support Technician',
     period: 'Oct 2025 to now',
     tone: 'green',
     current: true,
@@ -121,29 +140,32 @@ export const EXPERIENCE = [
       'Triage, log, and prioritize tickets in GitHub Issues, keeping response and resolution times within SLA.',
       'Troubleshoot login, account, permissions, and connectivity issues across web and SaaS platforms, including SSO and password resets.',
       'Reproduce reported bugs with detailed steps, then escalate past Tier 1 to engineering with clear documentation.',
-      'Monitor status dashboards, communicate outages proactively, and maintain the internal knowledge base.',
+      'Monitor status dashboards and communicate known outages proactively before the tickets arrive.',
+      'Write and maintain knowledge base articles and troubleshooting guides, and flag recurring ticket patterns so repeat issues get a permanent fix instead of a repeat ticket.',
     ],
   },
   {
     company: 'Rainbow Financial Group',
-    role: 'Technical Support Specialist',
+    location: 'Remote',
+    role: 'Technical Support Specialist & Executive Administrator',
     period: 'Jan 2019 to Oct 2025',
     tone: 'blue',
     bullets: [
       'Administered the Salesforce CRM platform: custom fields, automated actions, and agent data records.',
-      'Managed the full insurance agent licensing and credentialing lifecycle from submission through carrier approval.',
+      'Managed Salesforce user accounts end to end: created and deactivated users, reset access, and assigned profiles and permission sets as agents onboarded and departed.',
+      'Managed the full insurance agent licensing and credentialing lifecycle from submission through carrier approval, monitoring and renewing licensing to keep producers contract-ready.',
       'Diagnosed and resolved platform issues, escalating complex matters to Salesforce support and coordinating resolution.',
-      'Audited agent records for compliance with carrier requirements, and led internal meetings over join.me on platform and procedural changes.',
+      'Audited agent records for compliance with evolving carrier requirements, and led internal meetings over join.me on platform and procedural changes.',
     ],
   },
   {
     company: 'Earlier',
-    role: 'Tops (full service delivery), Whole Foods Market (cashier)',
-    period: '2015 to 2019',
+    role: 'Tops, Whole Foods Market, Guitar Center, Mother’s Market, AppleOne placements',
+    period: '2005 to 2019',
     tone: 'yellow',
     compact: true,
     bullets: [
-      'Client-facing service roles: in-home consultation and product recommendations, inventory and order fulfillment against 15-minute ETA windows, high-accuracy cash handling with end-of-shift reporting.',
+      'Client-facing service, retail, and warehouse roles: in-home consultation and product recommendations, inventory and order fulfillment against 15-minute ETA windows, high-accuracy cash handling with end-of-shift reporting, plus assembly and light industrial work across temp placements. Full history on the résumé.',
     ],
   },
 ];
@@ -157,6 +179,12 @@ export const CERTIFICATIONS = [
   },
   {
     name: 'Active Directory Domain Services',
+    status: 'complete',
+    tone: 'blue',
+    detail: 'Microsoft Learn',
+  },
+  {
+    name: 'Microsoft Intune Fundamentals',
     status: 'complete',
     tone: 'blue',
     detail: 'Microsoft Learn',
@@ -176,7 +204,11 @@ export const CERTIFICATIONS = [
 ];
 
 export const EDUCATION = [
-  { school: 'Saddleback College', detail: 'Mission Viejo, CA. Photography.', period: '2006 to 2007' },
+  {
+    school: 'Saddleback College',
+    detail: 'Mission Viejo, CA. Coursework toward an Associate’s in Photography, minor in Business.',
+    period: '2006 to 2007',
+  },
   { school: 'Browning Academy', detail: 'La Verkin, UT. High school diploma.', period: '2006' },
 ];
 
@@ -185,6 +217,6 @@ export const EDUCATION = [
    already stated in the hero. */
 export const STATS = [
   { value: '7+', unit: 'yrs', label: 'Technical support', tone: 'blue' },
-  { value: '3', unit: '', label: 'MS Learn tracks', tone: 'accent' },
+  { value: '4', unit: '', label: 'MS Learn tracks', tone: 'accent' },
   { value: 'CCNA', unit: '', label: 'In progress', tone: 'accent' },
 ];
