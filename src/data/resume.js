@@ -130,7 +130,7 @@ export const PROJECTS = [
 export const EXPERIENCE = [
   {
     company: 'JoyPunk LLC',
-    location: 'Long Beach, CA',
+    location: 'Remote',
     role: 'Help Desk Support Technician',
     period: 'Oct 2025 to now',
     tone: 'green',
