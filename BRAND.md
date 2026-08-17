@@ -186,7 +186,7 @@ The 1.55fr/1fr editorial split and its bleed-off accent panel were retired in 2.
   compositing — **never `shadowBlur` per stroke**, which is what kills the framerate.
   Sits at 40% opacity. Without JS the hero is ground plus the CSS grid floor, which is
   the intended fallback rather than a degraded one.
-- **Scanlines.** Fixed, 1px in 3 at 22% black, whole page. Heavier makes long-form notes
+- **Scanlines.** Fixed, 1px in 3 at 22% black, whole page. Heavier makes body copy
   tiring; this is the ceiling, not a starting point.
 - **Grid floor.** `rotateX(74deg)` on repeating gradients, 18% opacity. The same texture
   at 16% marks the `.grid-texture` section bands.

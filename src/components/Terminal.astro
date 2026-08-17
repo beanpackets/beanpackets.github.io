@@ -161,7 +161,6 @@
         ['skills', 'technical skill groups'],
         ['experience', 'work history, condensed'],
         ['projects', 'home lab & projects'],
-        ['notes', 'lab notes index'],
         ['resume', 'download the résumé (pdf)'],
         ['contact', 'how to reach me'],
         ['ping matthew', 'check availability'],
@@ -178,17 +177,18 @@
       line('matthew bean', 'text-text');
       line('  IT support: help desk operations, hardware');
       line('  diagnostics, and methodical troubleshooting. Salesforce CRM');
-      line('  admin for six years before that. Studying for the CCNA.');
+      line('  admin and user provisioning for six years before that.');
+      line('  Studying for the CCNA.');
       line(`  ${SITE.location}, available full-time, on-site`, 'text-green');
     };
 
     const skills = () => {
       const rows: [string, string][] = [
-        ['systems', 'Windows 10/11, Active Directory, Azure Virtual Desktop, Linux'],
+        ['systems', 'Windows 10/11, Active Directory, Azure Virtual Desktop, Intune, Linux'],
         ['networking', 'subnetting, routing & switching, VLANs, DNS/DHCP, VPN'],
-        ['hardware', 'PC builds, component repair, boot/POST diagnostics'],
+        ['hardware', 'PC builds, component repair, boot/POST diagnostics, soldering'],
         ['platforms', 'Salesforce, GitHub Issues, Git, Google Workspace'],
-        ['operations', 'ticketing, SLA management, escalation, documentation'],
+        ['operations', 'ticketing, SLA management, provisioning, escalation, docs'],
       ];
       for (const [k, v] of rows) {
         const el = document.createElement('div');
@@ -206,10 +206,10 @@
     };
 
     const experience = () => {
-      line('  2025-now   JoyPunk LLC, HelpDesk Support Technician', 'text-text');
+      line('  2025-now   JoyPunk LLC, Help Desk Support Technician', 'text-text');
       line('             tickets, triage, SSO & access issues, bug reproduction');
-      line('  2019-2025  Rainbow Financial Group, Technical Support Specialist', 'text-text');
-      line('             Salesforce CRM admin, licensing lifecycle, escalations');
+      line('  2019-2025  Rainbow Financial Group, Tech Support & Exec Admin', 'text-text');
+      line('             Salesforce admin, user accounts, licensing lifecycle');
       line("  run 'goto experience' for the full timeline");
     };
 
@@ -217,14 +217,9 @@
       line('  home server & network   DNS filtering, VPN, uptime monitoring');
       line('  packet tracer labs      VLANs, inter-VLAN routing, trunking');
       line('  pc builds & repair      full builds, boot/POST failure diagnosis');
+      line('  fpv drones & 2.4 GHz    soldering, Betaflight, interference & RF');
+      line('  crypto & blockchain     GPU rigs, self-custody, nodes, DeFi');
       line('  this site               Astro, hardened CI/CD, strict CSP');
-    };
-
-    const notes = () => {
-      line('lab notes:', 'text-text');
-      link('subnetting without the panic', '/notes/subnetting-the-slash-26/', false);
-      link('VLANs, one trunk, and the mistake I keep making', '/notes/vlan-trunk-lab/', false);
-      link("bug reports that don't bounce back", '/notes/bug-reports-that-dont-bounce/', false);
     };
 
     const contact = () => {
@@ -266,11 +261,11 @@
     };
 
     const ls = () => {
-      line('about/  skills/  work/  experience/  certifications/  notes/  github/  contact/');
+      line('about/  skills/  work/  experience/  certifications/  github/  contact/');
     };
 
     const goto_ = (arg: string) => {
-      const valid = ['about', 'skills', 'work', 'experience', 'certifications', 'notes', 'github', 'contact'];
+      const valid = ['about', 'skills', 'work', 'experience', 'certifications', 'github', 'contact'];
       if (!valid.includes(arg)) {
         line(`goto: no such section: ${arg || '(none)'}. try 'ls'`, 'text-[#ff5f57]');
         return;
@@ -282,7 +277,7 @@
         // is smooth, so reduced-motion users would still get an animation.
         target.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth' });
       } else {
-        // Notes pages have no homepage sections, so navigate instead.
+        // Opened from a page other than the homepage, so navigate instead.
         window.location.href = `/#${arg}`;
       }
     };
@@ -307,7 +302,6 @@
         case 'skills': skills(); break;
         case 'experience': case 'history': experience(); break;
         case 'projects': case 'work': projects(); break;
-        case 'notes': notes(); break;
         case 'contact': contact(); break;
         case 'resume': case 'cv':
           line('downloading Matthew_Bean_Resume.pdf ...', 'text-green');

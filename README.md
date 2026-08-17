@@ -10,7 +10,6 @@ Live at **https://beanpackets.github.io**
 | --------- | --------------------------------------------- |
 | Framework | [Astro](https://astro.build) 7, static output |
 | Styling   | [Tailwind CSS](https://tailwindcss.com) 4     |
-| Content   | Astro content collections (markdown notes)    |
 | Fonts     | IBM Plex, self-hosted via Fontsource          |
 | Hosting   | GitHub Pages                                  |
 | CI/CD     | GitHub Actions                                |
@@ -36,32 +35,13 @@ Requires Node 24 (the version CI builds with).
 src/
   assets/          hero and card artwork, optimized at build time
   components/      page sections, terminal, inline SVG icons
-  content/notes/   lab notes, one markdown file each
   data/            site config and resume content
   layouts/         base HTML shell: meta, CSP, JSON-LD
-  pages/           routes: index, notes, 404, rss.xml
-  styles/          Tailwind theme, tone system, prose styles
+  pages/           routes: index, 404
+  styles/          Tailwind theme, tone system
 resume-src/        LaTeX source for the public resume PDF
 scripts/           social card generation
 ```
-
-### Adding a lab note
-
-Create `src/content/notes/my-note.md`:
-
-```markdown
----
-title: 'Note title'
-date: 2026-08-01
-summary: 'One sentence for the index and RSS feed.'
-tags: ['CCNA']
----
-
-Body in markdown.
-```
-
-It shows up on `/notes/`, in the homepage teaser, and in `/rss.xml`. Set
-`draft: true` to keep one out of the build.
 
 ### Rebuilding the resume PDF
 
@@ -123,5 +103,5 @@ in this repository.
 
 ## License
 
-Code is MIT. Resume content, notes, and artwork are (c) Matthew Bean and not
+Code is MIT. Resume content and artwork are (c) Matthew Bean and not
 covered by that license.
