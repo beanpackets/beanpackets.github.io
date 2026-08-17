@@ -1,24 +1,174 @@
 ---
 import { STATS } from '../data/resume.js';
+
+/* Node cluster rather than a row of tiles. Bubble size is visual weight, not a
+   quantity — the values are mixed units and don't share a scale.
+
+   Two renderings: an SVG cluster from sm up, a 2x2 grid below it where the
+   cluster's labels would collide. Both are aria-hidden; the screen-reader copy
+   is the list at the top, so neither rendering has to carry the semantics. */
+
+const NODES = [
+  { cx: 140, cy: 140, r: 70, labelY: 248 },
+  { cx: 370, cy: 105, r: 52, labelY: 191 },
+  { cx: 590, cy: 168, r: 62, labelY: 264 },
+  { cx: 792, cy: 108, r: 50, labelY: 190 },
+];
+
+/* Fit the value to the bubble instead of a fixed size — "100%" in the smallest
+   node overflows its ring at 34px, "4" is lost at 24px. */
+const fit = (value, unit, r) => {
+  const chars = String(value).length + (unit ? 1.6 : 0);
+  return Math.round(Math.min(34, Math.max(18, (r * 2 - 22) / (chars * 0.6))));
+};
+
+const items = STATS.slice(0, 4).map((s, i) => ({
+  ...s,
+  ...NODES[i],
+  fontSize: fit(s.value, s.unit, NODES[i].r),
+}));
 ---
 
-<section aria-label="At a glance" class="border-y border-edge bg-surface/40">
-  <div class="shell grid grid-cols-2 sm:grid-cols-4">
+<section aria-label="At a glance">
+  <ul class="sr-only">
     {
-      STATS.map((s, i) => (
-        <div
-          data-tone={s.tone}
-          class={`px-2 py-7 sm:px-6 sm:py-8 ${i < 2 ? 'border-b border-edge sm:border-b-0' : ''} ${
-            i % 2 === 1 ? 'border-l border-edge' : ''
-          } ${i === 2 ? 'sm:border-l sm:border-edge' : ''}`}
-        >
-          <p class="font-display text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl">
-            <span class="tone-text">{s.value}</span>
-            {s.unit && <span class="ml-1 text-base font-normal text-muted">{s.unit}</span>}
-          </p>
-          <p class="mt-1.5 font-mono text-[0.68rem] tracking-wider text-muted uppercase">{s.label}</p>
-        </div>
+      STATS.map((s) => (
+        <li>
+          {s.value}
+          {s.unit ? ` ${s.unit}` : ''} — {s.label}
+        </li>
       ))
     }
+  </ul>
+
+  <div class="shell py-8 sm:py-10">
+    <svg
+      class="stat-map hidden w-full sm:block"
+      viewBox="0 0 900 282"
+      fill="none"
+      aria-hidden="true"
+    >
+      <g class="stat-link">
+        {
+          items.slice(0, -1).map((n, i) => (
+            <line x1={n.cx} y1={n.cy} x2={items[i + 1].cx} y2={items[i + 1].cy} />
+          ))
+        }
+      </g>
+
+      {
+        items.map((n) => (
+          <g data-tone={n.tone} class="stat-node">
+            <circle class="stat-halo" cx={n.cx} cy={n.cy} r={n.r} />
+            <circle class="stat-ring" cx={n.cx} cy={n.cy} r={n.r} />
+            <text
+              class="stat-value"
+              x={n.cx}
+              y={n.cy}
+              text-anchor="middle"
+              dominant-baseline="central"
+              font-size={n.fontSize}
+            >
+              {n.value}
+              {n.unit && <tspan class="stat-unit" font-size={Math.round(n.fontSize * 0.5)}> {n.unit}</tspan>}
+            </text>
+            <text class="stat-label" x={n.cx} y={n.labelY} text-anchor="middle">
+              {n.label}
+            </text>
+          </g>
+        ))
+      }
+    </svg>
+
+    <div class="grid grid-cols-2 gap-x-4 gap-y-8 sm:hidden" aria-hidden="true">
+      {
+        items.map((n) => (
+          <div data-tone={n.tone} class="flex flex-col items-center text-center">
+            <span class="stat-bubble">
+              {n.value}
+              {n.unit && <em class="stat-bubble-unit">{n.unit}</em>}
+            </span>
+            <span class="mt-2.5 font-mono text-[0.66rem] tracking-wider text-muted uppercase">
+              {n.label}
+            </span>
+          </div>
+        ))
+      }
+    </div>
   </div>
 </section>
+
+<style>
+  .stat-map {
+    overflow: visible;
+  }
+
+  .stat-link line {
+    stroke: var(--color-edge-bright);
+    stroke-width: 1;
+    stroke-dasharray: 3 5;
+    opacity: 0.7;
+  }
+
+  .stat-halo {
+    fill: color-mix(in oklab, var(--tone) 9%, transparent);
+  }
+
+  .stat-ring {
+    fill: none;
+    stroke: var(--tone);
+    stroke-width: 1.5;
+    opacity: 0.85;
+    filter: drop-shadow(0 0 10px color-mix(in oklab, var(--tone) 55%, transparent));
+  }
+
+  /* Sizes come from font-size presentation attributes, not CSS — the prod CSP
+     blocks inline styles, and a CSS rule here would override the attribute. */
+  .stat-value {
+    fill: var(--tone-ink);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-unit {
+    fill: var(--color-muted);
+    font-weight: 400;
+  }
+
+  .stat-label {
+    fill: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Mobile bubbles. Fixed square so the circle can't turn into an ellipse when
+     the value string is wide. */
+  .stat-bubble {
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.15rem;
+    width: 6.25rem;
+    height: 6.25rem;
+    border-radius: 50%;
+    border: 1.5px solid var(--tone);
+    background: color-mix(in oklab, var(--tone) 9%, transparent);
+    box-shadow: 0 0 18px -4px color-mix(in oklab, var(--tone) 60%, transparent);
+    color: var(--tone-ink);
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 6.25rem;
+  }
+
+  .stat-bubble-unit {
+    font-size: 0.85rem;
+    font-style: normal;
+    font-weight: 400;
+    color: var(--color-muted);
+  }
+</style>
