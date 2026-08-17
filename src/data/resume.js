@@ -180,9 +180,11 @@ export const EDUCATION = [
   { school: 'Browning Academy', detail: 'La Verkin, UT. High school diploma.', period: '2006' },
 ];
 
+/* Every entry has to be something countable. "100% on-site availability" was
+   here and read as padding — it's a preference, not a measurement, and it's
+   already stated in the hero. */
 export const STATS = [
   { value: '7+', unit: 'yrs', label: 'Technical support', tone: 'blue' },
   { value: '3', unit: '', label: 'MS Learn tracks', tone: 'accent' },
   { value: 'CCNA', unit: '', label: 'In progress', tone: 'accent' },
-  { value: '100%', unit: '', label: 'On-site availability', tone: 'green' },
 ];
