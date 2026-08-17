@@ -184,10 +184,10 @@
 
     const skills = () => {
       const rows: [string, string][] = [
-        ['systems', 'Windows 10/11, Active Directory, Azure Virtual Desktop, Intune, Linux'],
-        ['networking', 'subnetting, routing & switching, VLANs, DNS/DHCP, VPN'],
+        ['systems', 'Windows 10/11, Active Directory, Azure Virtual Desktop, Linux, Docker'],
+        ['networking', 'subnetting, routing & switching, VLANs, DNS/DHCP, VPN, tshark'],
         ['hardware', 'PC builds, component repair, boot/POST diagnostics, soldering'],
-        ['platforms', 'Salesforce, GitHub Issues, Git, Google Workspace'],
+        ['platforms', 'Salesforce, GitHub Issues, Git, Google Workspace, Uptime Kuma'],
         ['operations', 'ticketing, SLA management, provisioning, escalation, docs'],
       ];
       for (const [k, v] of rows) {
@@ -214,7 +214,7 @@
     };
 
     const projects = () => {
-      line('  home server & network   DNS filtering, VPN, uptime monitoring');
+      line('  home server & network   Pi 4, Docker, Pi-hole, Tailscale, Uptime Kuma');
       line('  packet tracer labs      VLANs, inter-VLAN routing, trunking');
       line('  pc builds & repair      full builds, boot/POST failure diagnosis');
       line('  fpv drones & 2.4 GHz    soldering, Betaflight, interference & RF');

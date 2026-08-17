@@ -4,7 +4,7 @@
 export const ABOUT = [
   `I run help desk operations for a SaaS company. First contact for tickets, emails, chats, calls. Most days that means triaging in GitHub Issues, untangling login and permissions problems, reproducing bugs properly, and knowing when something is mine to fix and when it needs Tier 2.`,
   `Before that, six years as a technical support specialist and executive administrator on a Salesforce CRM: custom fields, automated actions, agent records, and user accounts end to end, from provisioning and permission sets through deactivation. The whole licensing and credentialing lifecycle ran on top of it.`,
-  `I'm studying for the CCNA and I keep a home lab. DNS filtering, VPN, uptime monitoring. Enough PC builds and component-level repairs that boot/POST troubleshooting is muscle memory. San Diego, available full-time, on-site.`,
+  `I'm studying for the CCNA and I run a home lab: a Raspberry Pi 4 on Linux with a static IP, serving Docker containers. Pi-hole filters DNS, Tailscale handles remote access, Uptime Kuma watches availability, and when something looks wrong I capture the traffic with tshark and read it. Enough PC builds and component-level repairs that boot/POST troubleshooting is muscle memory. San Diego, available full-time, on-site.`,
 ];
 
 export const SKILLS = [
@@ -16,8 +16,8 @@ export const SKILLS = [
       'Windows 10/11 desktop administration',
       'Active Directory fundamentals',
       'Azure Virtual Desktop & Windows 365',
-      'Microsoft Intune fundamentals',
-      'Linux fundamentals (home server)',
+      'Linux server administration (Raspberry Pi OS)',
+      'Docker container deployment',
       'Basic virtualization concepts',
     ],
   },
@@ -32,6 +32,8 @@ export const SKILLS = [
       'VLANs, DNS/DHCP, VPN configuration',
       'Basic network security concepts',
       'Connectivity and DNS troubleshooting',
+      'Pi-hole DNS filtering, Tailscale VPN',
+      'Packet capture and analysis (tshark, Wireshark)',
     ],
   },
   {
@@ -52,6 +54,7 @@ export const SKILLS = [
     items: [
       'Salesforce CRM config and automation',
       'GitHub Issues, Git version control',
+      'Docker, Uptime Kuma, Homarr',
       'Google Workspace',
       'join.me',
       'Microsoft Office, Adobe Acrobat',
@@ -80,8 +83,8 @@ export const PROJECTS = [
     icon: 'server',
     featured: true,
     summary:
-      'Self-managed home server running DNS filtering, VPN access, and uptime monitoring. Where I break things on purpose and then fix them.',
-    tags: ['Linux', 'DNS', 'VPN', 'Monitoring'],
+      'A Raspberry Pi 4 on Linux with a static IP, running services in Docker: Pi-hole filtering DNS through Cloudflare upstream resolvers, Tailscale for encrypted remote access, Uptime Kuma on availability, and Homarr tying it together. Where I break things on purpose and then fix them.',
+    tags: ['Linux', 'Docker', 'Pi-hole', 'Tailscale', 'Monitoring'],
   },
   {
     title: 'Packet Tracer VLAN labs',
