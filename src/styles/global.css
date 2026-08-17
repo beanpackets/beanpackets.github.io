@@ -1,8 +1,13 @@
 @import 'tailwindcss';
 
+/* Sans stays variable: body copy uses 400, 500 and 600, and three statics cost
+   about what the variable file does. Mono is pinned to the latin subset and
+   carries a real 600 — headings are mono now, and without it every h1/h2 was
+   being synthetically emboldened from the 500. */
 @import '@fontsource-variable/ibm-plex-sans';
-@import '@fontsource/ibm-plex-mono/400.css';
-@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/latin-400.css';
+@import '@fontsource/ibm-plex-mono/latin-500.css';
+@import '@fontsource/ibm-plex-mono/latin-600.css';
 
 /* Neon terminal. Near-black ground with a green tint so the glow has something
    to sit in, one accent, and status hues that stay distinguishable from it.

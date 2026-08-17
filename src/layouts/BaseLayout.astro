@@ -3,6 +3,13 @@ import { SITE, LINKS, ANALYTICS } from '../data/site.js';
 import Terminal from '../components/Terminal.astro';
 import '../styles/global.css';
 
+/* The two faces used above the fold. Without preloading, neither is requested
+   until the stylesheet has been fetched and parsed, which pushes the headline's
+   real weight past first paint. Imported rather than hardcoded so the hashed
+   build filenames stay correct. */
+import monoSemibold from '@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-600-normal.woff2?url';
+import sansVariable from '@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2?url';
+
 interface Props {
   title?: string;
   description?: string;
@@ -89,6 +96,9 @@ const personSchema = {
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+
+    <link rel="preload" href={monoSemibold} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={sansVariable} as="font" type="font/woff2" crossorigin />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
