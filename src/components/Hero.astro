@@ -2,37 +2,29 @@
 import { SITE } from '../data/site.js';
 import Icon from './Icon.astro';
 
-/* Full-bleed hero. The canvas sits behind everything and a gradient keeps the
-   top two-thirds near-solid so the headline never fights it. Copy stays on the
-   page grid via .hero-copy. */
+/* The generative canvas IS the hero. Copy sits centred on top of it, over a
+   radial scrim that keeps the type readable whatever the canvas is doing.
+   Mode controls sit at the foot of the section. */
 ---
 
-<section class="hero-split relative isolate grid min-h-[92svh] grid-rows-[1fr_auto] overflow-hidden pt-16">
+<section class="hero relative isolate flex min-h-svh flex-col overflow-hidden pt-16">
   <canvas
     data-hero-canvas
     aria-hidden="true"
     class="absolute inset-0 z-0 h-full w-full opacity-0 transition-opacity duration-1000"
   ></canvas>
 
-  <!-- Perspective grid floor. Pure CSS, so it still runs with JS off. -->
+  <!-- Perspective floor. Pure CSS, so it still reads with JS off. -->
   <div class="pointer-events-none absolute inset-0 z-[1] overflow-hidden [perspective:340px]" aria-hidden="true">
     <div class="hero-floor absolute -inset-x-[60%] -bottom-[45%] h-[160%] origin-bottom [transform:rotateX(74deg)]"></div>
   </div>
 
-  <div
-    class="pointer-events-none absolute inset-x-0 top-0 z-[2] h-[72%] bg-[linear-gradient(to_bottom,var(--color-ground)_42%,transparent)]"
-    aria-hidden="true"
-  >
-  </div>
-  <div
-    class="pointer-events-none absolute inset-0 z-[3] bg-[radial-gradient(ellipse_at_50%_45%,transparent_40%,rgba(3,10,5,0.82))]"
-    aria-hidden="true"
-  >
-  </div>
+  <div class="hero-scrim pointer-events-none absolute inset-0 z-[2]" aria-hidden="true"></div>
+  <div class="hero-scan pointer-events-none absolute inset-0 z-[3]" aria-hidden="true"></div>
 
-  <div class="hero-copy relative z-10 flex items-center py-16 pr-5 md:py-24 md:pr-12">
-    <div class="max-w-2xl">
-      <p class="mb-7 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+  <div class="relative z-10 flex flex-1 items-center justify-center">
+    <div class="shell flex flex-col items-center py-16 text-center md:py-20">
+      <p class="mb-7 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm">
         <span class="text-accent-ink">{SITE.availability}</span>
         <span class="text-muted" aria-hidden="true">/</span>
         <span class="text-muted">{SITE.location}</span>
@@ -51,7 +43,7 @@ import Icon from './Icon.astro';
         closes tickets instead of forwarding them. Studying for the CCNA.
       </p>
 
-      <div class="mt-10 flex flex-wrap items-center gap-3">
+      <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
         <a
           href="#work"
           class="group inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-on-accent shadow-[0_0_26px_-4px_rgba(57,255,20,0.55)] transition-shadow hover:shadow-[0_0_40px_-4px_rgba(57,255,20,0.8)]"
@@ -85,6 +77,16 @@ import Icon from './Icon.astro';
   </div>
 
   <div class="relative z-10">
+    <div class="shell flex flex-wrap items-center justify-center gap-x-4 gap-y-2 pb-6">
+      <div class="flex flex-wrap justify-center gap-1.5" role="group" aria-label="Background mode">
+        <button type="button" class="hero-btn" data-hero-mode="0" aria-pressed="true">Flow</button>
+        <button type="button" class="hero-btn" data-hero-mode="1" aria-pressed="false">Warp</button>
+        <button type="button" class="hero-btn" data-hero-mode="2" aria-pressed="false">Scope</button>
+        <button type="button" class="hero-btn" data-hero-mode="3" aria-pressed="false">Spectrum</button>
+      </div>
+      <button type="button" class="hero-btn" data-hero-seed>Randomise</button>
+      <button type="button" class="hero-btn" data-hero-play aria-pressed="true">Pause</button>
+    </div>
     <hr class="laser" />
   </div>
 </section>
@@ -106,31 +108,77 @@ import Icon from './Icon.astro';
     }
   }
 
+  /* Scrim is doing the legibility work now that copy sits over the middle of
+     the canvas rather than above it. */
+  .hero-scrim {
+    background:
+      radial-gradient(ellipse 52% 40% at 50% 46%, rgba(3, 10, 5, 0.88), rgba(3, 10, 5, 0.4) 68%, transparent 88%),
+      linear-gradient(to bottom, var(--color-ground) 3%, transparent 22%, transparent 78%, rgba(3, 10, 5, 0.8));
+  }
+
+  .hero-scan {
+    opacity: 0.35;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.26) 0 1px,
+      transparent 1px 3px
+    );
+  }
+
+  .hero-btn {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 4px;
+    border: 1px solid var(--color-edge);
+    color: var(--color-muted);
+    background: color-mix(in oklab, var(--color-ground) 55%, transparent);
+    transition:
+      color 0.18s,
+      border-color 0.18s,
+      background-color 0.18s,
+      box-shadow 0.18s;
+  }
+
+  .hero-btn:hover {
+    color: var(--color-text);
+    border-color: var(--color-edge-bright);
+  }
+
+  .hero-btn[aria-pressed='true'] {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-on-accent);
+    box-shadow: 0 0 16px -4px rgba(57, 255, 20, 0.7);
+  }
 </style>
 
 <script>
-  /* Flow field: particles read an angle off a layered-sine field and draw one
-     short segment per frame. The canvas is never cleared, only washed, so the
-     trails are the image. Bloom comes from 'lighter' compositing — shadowBlur
-     per stroke is what kills the framerate here. */
+  /* Four modes on one canvas. Bloom comes from 'lighter' compositing — a
+     shadowBlur per stroke is what kills the framerate at this particle count. */
   const canvas = document.querySelector<HTMLCanvasElement>('[data-hero-canvas]');
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (canvas) {
-    const ctx = canvas.getContext('2d', { alpha: true });
+    const ctx = canvas.getContext('2d', { alpha: false });
 
     if (ctx) {
       type Particle = { x: number; y: number; px: number; py: number; life: number };
+      type Star = { x: number; y: number; z: number; pz: number };
+
+      const modeBtns = document.querySelectorAll<HTMLButtonElement>('[data-hero-mode]');
+      const playBtn = document.querySelector<HTMLButtonElement>('[data-hero-play]');
 
       let width = 0;
       let height = 0;
+      let mode = 0;
+      let t = 0;
       let raf = 0;
       let running = false;
       let particles: Particle[] = [];
-      let t = 0;
-
-      const seedA = Math.random() * 100;
-      const seedB = Math.random() * 100;
+      let stars: Star[] = [];
+      let seedA = Math.random() * 100;
+      let seedB = Math.random() * 100;
 
       const spawn = (): Particle => ({
         x: Math.random() * width,
@@ -140,6 +188,12 @@ import Icon from './Icon.astro';
         life: 20 + Math.random() * 150,
       });
 
+      function clear() {
+        ctx!.globalCompositeOperation = 'source-over';
+        ctx!.fillStyle = '#030a05';
+        ctx!.fillRect(0, 0, width, height);
+      }
+
       function build() {
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
         const rect = canvas!.getBoundingClientRect();
@@ -148,14 +202,18 @@ import Icon from './Icon.astro';
         canvas!.width = Math.round(width * dpr);
         canvas!.height = Math.round(height * dpr);
         ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+        clear();
 
-        ctx!.globalCompositeOperation = 'source-over';
-        ctx!.fillStyle = '#030a05';
-        ctx!.fillRect(0, 0, width, height);
-
-        // Scale with area, hard ceiling for low-end GPUs.
-        const count = Math.min(360, Math.max(60, Math.round((width * height) / 2600)));
+        // Scale with area, hard ceiling for low-end GPUs. Denser than a normal
+        // background because the scrim eats most of it.
+        const count = Math.min(560, Math.max(90, Math.round((width * height) / 1800)));
         particles = Array.from({ length: count }, spawn);
+        stars = Array.from({ length: Math.round(count * 0.7) }, () => ({
+          x: (Math.random() - 0.5) * width,
+          y: (Math.random() - 0.5) * height,
+          z: Math.random() * width,
+          pz: 0,
+        }));
       }
 
       function angleAt(x: number, y: number) {
@@ -164,36 +222,112 @@ import Icon from './Icon.astro';
         return (a + b) * 1.15;
       }
 
-      function step() {
-        t += 0.0072;
-
+      function wash(alpha: number) {
         ctx!.globalCompositeOperation = 'source-over';
-        ctx!.fillStyle = 'rgba(3, 10, 5, 0.075)';
+        ctx!.fillStyle = `rgba(3, 10, 5, ${alpha})`;
         ctx!.fillRect(0, 0, width, height);
+      }
 
-        ctx!.globalCompositeOperation = 'lighter';
-        ctx!.lineWidth = 1.1;
+      function step() {
+        t += 0.0075;
 
-        for (let i = 0; i < particles.length; i++) {
-          const p = particles[i];
-          p.px = p.x;
-          p.py = p.y;
-
-          const a = angleAt(p.x, p.y);
-          p.x += Math.cos(a) * 0.86;
-          p.y += Math.sin(a) * 0.86;
-          p.life -= 0.45;
-
-          // Hue rides the field angle: accent green through to the mint status hue.
-          const hue = 104 + ((((a % 1) + 1) % 1) * 58);
-          ctx!.strokeStyle = `hsla(${hue}, 100%, 58%, 0.5)`;
-          ctx!.beginPath();
-          ctx!.moveTo(p.px, p.py);
-          ctx!.lineTo(p.x, p.y);
-          ctx!.stroke();
-
-          if (p.life < 0 || p.x < -20 || p.x > width + 20 || p.y < -20 || p.y > height + 20) {
-            particles[i] = spawn();
+        if (mode === 0) {
+          // Lighter wash than usual so trails survive long enough to read as
+          // lines rather than dots.
+          wash(0.05);
+          ctx!.globalCompositeOperation = 'lighter';
+          ctx!.lineWidth = 1.1;
+          for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            p.px = p.x;
+            p.py = p.y;
+            const a = angleAt(p.x, p.y);
+            p.x += Math.cos(a) * 1.7;
+            p.y += Math.sin(a) * 1.7;
+            p.life -= 0.4;
+            const hue = 104 + ((((a % 1) + 1) % 1) * 58);
+            ctx!.strokeStyle = `hsla(${hue}, 100%, 58%, 0.5)`;
+            ctx!.beginPath();
+            ctx!.moveTo(p.px, p.py);
+            ctx!.lineTo(p.x, p.y);
+            ctx!.stroke();
+            if (p.life < 0 || p.x < -20 || p.x > width + 20 || p.y < -20 || p.y > height + 20) {
+              particles[i] = spawn();
+            }
+          }
+        } else if (mode === 1) {
+          wash(0.2);
+          ctx!.globalCompositeOperation = 'lighter';
+          const cx = width / 2;
+          const cy = height / 2;
+          for (const s of stars) {
+            s.pz = s.z;
+            s.z -= 3;
+            if (s.z < 1) {
+              s.x = (Math.random() - 0.5) * width * 1.4;
+              s.y = (Math.random() - 0.5) * height * 1.4;
+              s.z = width;
+              s.pz = width;
+            }
+            const sx = cx + (s.x / s.z) * width * 0.9;
+            const sy = cy + (s.y / s.z) * width * 0.9;
+            const ex = cx + (s.x / s.pz) * width * 0.9;
+            const ey = cy + (s.y / s.pz) * width * 0.9;
+            const d = 1 - s.z / width;
+            ctx!.lineWidth = 0.4 + d * 2.2;
+            ctx!.strokeStyle = `hsla(${108 + d * 46}, 100%, ${48 + d * 30}%, ${0.22 + d * 0.68})`;
+            ctx!.beginPath();
+            ctx!.moveTo(ex, ey);
+            ctx!.lineTo(sx, sy);
+            ctx!.stroke();
+          }
+        } else if (mode === 2) {
+          wash(0.1);
+          ctx!.globalCompositeOperation = 'lighter';
+          const A = 3 + Math.sin(t * 0.13) * 2;
+          const B = 2 + Math.cos(t * 0.09) * 2;
+          const ph = t * 0.4;
+          const rx = width * 0.3;
+          const ry = height * 0.32;
+          const cx = width / 2;
+          const cy = height / 2;
+          // Wide-and-dim, medium, then a thin near-white core.
+          const widths = [3.2, 1.6, 0.8];
+          const cols = ['rgba(57,255,20,.14)', 'rgba(0,255,157,.34)', 'rgba(234,255,232,.7)'];
+          for (let layer = 0; layer < 3; layer++) {
+            ctx!.lineWidth = widths[layer];
+            ctx!.strokeStyle = cols[layer];
+            ctx!.beginPath();
+            for (let u = 0; u <= 360; u++) {
+              const th = (u / 360) * Math.PI * 2;
+              const X = cx + Math.sin(A * th + ph) * rx;
+              const Y = cy + Math.sin(B * th) * ry;
+              if (u) ctx!.lineTo(X, Y);
+              else ctx!.moveTo(X, Y);
+            }
+            ctx!.stroke();
+          }
+        } else {
+          wash(0.3);
+          ctx!.globalCompositeOperation = 'lighter';
+          const N = width < 640 ? 36 : 64;
+          const gap = 2;
+          const bw = (width - gap * (N - 1)) / N;
+          const base = height * 0.82;
+          for (let i = 0; i < N; i++) {
+            const f = i / N;
+            let v =
+              Math.abs(Math.sin(t * 1.9 + f * 7.1)) * 0.5 +
+              Math.abs(Math.sin(t * 0.7 + f * 13.3)) * 0.32 +
+              Math.abs(Math.sin(t * 3.3 - f * 4.2)) * 0.18;
+            v *= (1 - f * 0.55) * (0.55 + 0.45 * Math.sin(f * Math.PI));
+            const h = Math.max(2, v * height * 0.5);
+            const x = i * (bw + gap);
+            const hue = 100 + f * 60;
+            ctx!.fillStyle = `hsla(${hue}, 100%, 55%, 0.75)`;
+            ctx!.fillRect(x, base - h, bw, h);
+            ctx!.fillStyle = `hsla(${hue}, 100%, 55%, 0.14)`;
+            ctx!.fillRect(x, base + 3, bw, h * 0.42);
           }
         }
       }
@@ -204,53 +338,82 @@ import Icon from './Icon.astro';
         raf = requestAnimationFrame(frame);
       }
 
-      build();
-      canvas.classList.replace('opacity-0', 'opacity-40');
+      let onScreen = true;
+      let tabVisible = !document.hidden;
+      let wanted = !reduced;
 
-      if (reduced) {
-        // Settle on a still composition rather than showing an empty canvas.
-        for (let i = 0; i < 320; i++) step();
-      } else {
-        // Run only when the hero is BOTH on-screen and in a visible tab. Tracked
-        // separately: with one flag, returning to the tab would restart the loop
-        // even if the user had long since scrolled past.
-        let onScreen = true;
-        let tabVisible = !document.hidden;
-
-        const sync = () => {
-          if (onScreen && tabVisible) {
-            if (running) return;
-            running = true;
-            raf = requestAnimationFrame(frame);
-          } else if (running) {
-            running = false;
-            cancelAnimationFrame(raf);
-          }
-        };
-
-        sync();
-
-        if ('IntersectionObserver' in window) {
-          new IntersectionObserver(
-            ([entry]) => {
-              onScreen = entry.isIntersecting;
-              sync();
-            },
-            { threshold: 0 }
-          ).observe(canvas);
+      function sync() {
+        if (wanted && onScreen && tabVisible) {
+          if (running) return;
+          running = true;
+          raf = requestAnimationFrame(frame);
+        } else if (running) {
+          running = false;
+          cancelAnimationFrame(raf);
         }
+      }
 
-        document.addEventListener('visibilitychange', () => {
-          tabVisible = !document.hidden;
-          sync();
-        });
+      const settle = () => {
+        for (let i = 0; i < 320; i++) step();
+      };
 
-        let resizeTimer: number;
-        window.addEventListener('resize', () => {
-          window.clearTimeout(resizeTimer);
-          resizeTimer = window.setTimeout(build, 180);
+      build();
+      canvas.classList.replace('opacity-0', 'opacity-60');
+
+      if (reduced) settle();
+
+      for (const btn of modeBtns) {
+        btn.addEventListener('click', () => {
+          mode = Number(btn.dataset.heroMode);
+          for (const o of modeBtns) o.setAttribute('aria-pressed', String(o === btn));
+          clear();
+          if (reduced) settle();
         });
       }
+
+      document.querySelector('[data-hero-seed]')?.addEventListener('click', () => {
+        seedA = Math.random() * 100;
+        seedB = Math.random() * 100;
+        t = Math.random() * 50;
+        build();
+        if (reduced) settle();
+      });
+
+      playBtn?.addEventListener('click', () => {
+        wanted = !wanted;
+        playBtn.textContent = wanted ? 'Pause' : 'Play';
+        playBtn.setAttribute('aria-pressed', String(wanted));
+        sync();
+      });
+
+      sync();
+
+      // Run only when the hero is BOTH on-screen and in a visible tab. Tracked
+      // separately: with one flag, returning to the tab would restart the loop
+      // even if the user had long since scrolled past.
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(
+          ([entry]) => {
+            onScreen = entry.isIntersecting;
+            sync();
+          },
+          { threshold: 0 }
+        ).observe(canvas);
+      }
+
+      document.addEventListener('visibilitychange', () => {
+        tabVisible = !document.hidden;
+        sync();
+      });
+
+      let resizeTimer: number;
+      window.addEventListener('resize', () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => {
+          build();
+          if (reduced) settle();
+        }, 180);
+      });
     }
   }
 </script>
