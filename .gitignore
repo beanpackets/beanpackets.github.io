@@ -25,7 +25,6 @@ resume-src/resume.pdf
 /Matthew_Bean_Resume.pdf
 
 # editor / OS / local tooling
-.claude/
 .vscode/
 .idea/
 .DS_Store

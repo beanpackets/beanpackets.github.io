@@ -46,16 +46,21 @@ try {
   console.warn('[github] fetch failed at build time; rendering fallback panel.', err);
 }
 
-const langColors: Record<string, string> = {
-  Astro: '#ff5d01',
-  JavaScript: '#f1e05a',
-  TypeScript: '#3178c6',
-  Python: '#3572a5',
-  HTML: '#e34c26',
-  CSS: '#563d7c',
-  Shell: '#89e051',
-  PowerShell: '#012456',
+/* Language colours are applied as classes, never as a style attribute: the
+   production CSP sets style-src 'self', which blocks inline styles outright,
+   so a style attribute here renders the dot transparent. */
+const LANG_SLUGS: Record<string, string> = {
+  Astro: 'astro',
+  JavaScript: 'javascript',
+  TypeScript: 'typescript',
+  Python: 'python',
+  HTML: 'html',
+  CSS: 'css',
+  Shell: 'shell',
+  PowerShell: 'powershell',
 };
+
+const langClass = (lang?: string | null) => `lang-${(lang && LANG_SLUGS[lang]) || 'other'}`;
 ---
 
 <Section
@@ -91,10 +96,7 @@ const langColors: Record<string, string> = {
                 <div class="mt-4 flex items-center gap-4 font-mono text-xs text-muted">
                   {r.language && (
                     <span class="inline-flex items-center gap-1.5">
-                      <span
-                        class="inline-block h-2 w-2 rounded-full"
-                        style={`background:${langColors[r.language] ?? '#8b98ab'}`}
-                      />
+                      <span class={`inline-block h-2 w-2 rounded-full ${langClass(r.language)}`} />
                       {r.language}
                     </span>
                   )}
@@ -147,16 +149,20 @@ const langColors: Record<string, string> = {
   const user = root?.dataset.user;
 
   if (root && list && user) {
-    const LANGS: Record<string, string> = {
-      Astro: '#ff5d01',
-      JavaScript: '#f1e05a',
-      TypeScript: '#3178c6',
-      Python: '#3572a5',
-      HTML: '#e34c26',
-      CSS: '#563d7c',
-      Shell: '#89e051',
-      PowerShell: '#012456',
+    // Mirrors LANG_SLUGS in the frontmatter. Classes, not inline styles — the
+    // prod CSP blocks style attributes, which silently hid these dots.
+    const LANG_SLUGS: Record<string, string> = {
+      Astro: 'astro',
+      JavaScript: 'javascript',
+      TypeScript: 'typescript',
+      Python: 'python',
+      HTML: 'html',
+      CSS: 'css',
+      Shell: 'shell',
+      PowerShell: 'powershell',
     };
+
+    const langClass = (lang?: string | null) => `lang-${(lang && LANG_SLUGS[lang]) || 'other'}`;
 
     const el = (tag: string, cls?: string, text?: string) => {
       const node = document.createElement(tag);
@@ -206,8 +212,7 @@ const langColors: Record<string, string> = {
           const meta = el('div', 'mt-4 flex items-center gap-4 font-mono text-xs text-muted');
           if (r.language) {
             const wrap = el('span', 'inline-flex items-center gap-1.5');
-            const dot = el('span', 'inline-block h-2 w-2 rounded-full');
-            dot.setAttribute('style', `background:${LANGS[r.language] ?? '#8b98ab'}`);
+            const dot = el('span', `inline-block h-2 w-2 rounded-full ${langClass(r.language)}`);
             wrap.append(dot, document.createTextNode(String(r.language)));
             meta.append(wrap);
           }
@@ -227,3 +232,36 @@ const langColors: Record<string, string> = {
     })();
   }
 </script>
+
+<style is:global>
+  /* GitHub's own language colours. Global rather than scoped: the client-side
+     refresh builds its dots with createElement, so they never receive Astro's
+     scoping attribute and a scoped rule would miss them. */
+  .lang-astro {
+    background: #ff5d01;
+  }
+  .lang-javascript {
+    background: #f1e05a;
+  }
+  .lang-typescript {
+    background: #3178c6;
+  }
+  .lang-python {
+    background: #3572a5;
+  }
+  .lang-html {
+    background: #e34c26;
+  }
+  .lang-css {
+    background: #563d7c;
+  }
+  .lang-shell {
+    background: #89e051;
+  }
+  .lang-powershell {
+    background: #012456;
+  }
+  .lang-other {
+    background: #8b98ab;
+  }
+</style>
