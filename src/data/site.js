@@ -3,7 +3,7 @@
    identity is bean.packets@gmail.com only. */
 
 export const SITE = {
-  url: 'https://beanpackets.github.io',
+  url: 'https://matthewgsbean.com',
   name: 'Matthew Bean',
   title: 'Matthew Bean | IT Support & Network Professional',
   role: 'IT Support & Network Professional',
@@ -13,13 +13,16 @@ export const SITE = {
   description:
     'IT support professional in San Diego running help desk operations, administering cloud CRM platforms, and troubleshooting hardware, account, and connectivity issues. CCNA in progress.',
   githubUser: 'beanpackets',
+  /* Separate from githubUser. These used to be the same word, so labels were
+     built from whichever was handy; they are not the same word any more. */
+  linkedinUser: 'matthewgsbean',
   email: 'bean.packets@gmail.com',
   resumeFile: '/Matthew_Bean_Resume.pdf',
 };
 
 export const LINKS = {
   github: `https://github.com/${SITE.githubUser}`,
-  linkedin: 'https://www.linkedin.com/in/beanpackets',
+  linkedin: `https://www.linkedin.com/in/${SITE.linkedinUser}`,
   email: `mailto:${SITE.email}`,
 };
 

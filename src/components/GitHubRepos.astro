@@ -31,7 +31,7 @@ let status: 'ok' | 'empty' | 'error' = 'empty';
 try {
   const res = await fetch(
     `https://api.github.com/users/${SITE.githubUser}/repos?sort=updated&per_page=12`,
-    { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'beanpackets-portfolio' } }
+    { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'matthewgsbean-portfolio' } }
   );
   if (res.ok) {
     const data = (await res.json()) as Repo[];
@@ -171,7 +171,7 @@ const langClass = (lang?: string | null) => `lang-${(lang && LANG_SLUGS[lang]) |
       return node;
     };
 
-    (async () => {
+    const refresh = async () => {
       try {
         const res = await fetch(
           `https://api.github.com/users/${encodeURIComponent(user)}/repos?sort=updated&per_page=12`,
@@ -229,7 +229,28 @@ const langClass = (lang?: string | null) => `lang-${(lang && LANG_SLUGS[lang]) |
       } catch {
         // Offline, blocked, or rate-limited. Build-time list stands.
       }
-    })();
+    };
+
+    /* This section sits near the bottom of a very long page, but the fetch used
+       to fire during initial load: a DNS lookup, TLS handshake and round trip to
+       a third party, all competing with the critical path to render something
+       the visitor cannot see yet. The build-time list is already in the markup,
+       so nothing is missing if the refresh never runs at all. Waiting until the
+       section is within a viewport of being seen takes the whole third-party
+       chain out of the load window. */
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          io.disconnect();
+          refresh();
+        },
+        { rootMargin: '100% 0px' }
+      );
+      io.observe(root);
+    } else {
+      refresh();
+    }
   }
 </script>
 

@@ -1,9 +1,9 @@
 # Brand guidelines
 
-Personal identity for **bean.packets** — the portfolio of Matthew Bean, IT support and
-network professional.
+Personal identity for **matthewgsbean.com** — the portfolio of Matthew Bean, IT support
+and network professional.
 
-Version 2.0 · Authored in this repo. Everything here is original to this project.
+Version 2.1 · Authored in this repo. Everything here is original to this project.
 
 ---
 
@@ -11,8 +11,8 @@ Version 2.0 · Authored in this repo. Everything here is original to this projec
 
 ### Positioning
 
-For hiring managers filling help desk, desktop support, and NOC roles, bean.packets is
-the portfolio of a methodical IT support professional who closes tickets rather than
+For hiring managers filling help desk, desktop support, and NOC roles, matthewgsbean.com
+is the portfolio of a methodical IT support professional who closes tickets rather than
 forwarding them, and who is building toward networking through the CCNA.
 
 ### Personality
@@ -26,8 +26,10 @@ absence of a hero.
 
 ### The name
 
-`bean.packets` parses as a hostname. It says "networking" before anyone reads a word,
-and it is the single most valuable asset in this identity. Lean on it.
+The mark is the domain: `matthewgsbean.com`. It trades the old `bean.packets` pun for
+the candidate's actual name, which is what a hiring manager searches, writes down, and
+remembers. The networking read now comes from the work on the page rather than from a
+play on the wordmark, so the rest of the system has to carry it.
 
 ---
 
@@ -37,16 +39,18 @@ The wordmark is the name set in IBM Plex Mono Medium, lowercase, with the dot in
 `--color-accent-ink`:
 
 ```
-bean.packets
+matthewgsbean.com
 ```
 
 **Rules**
 
-- Always lowercase. Never `Bean.Packets`, never `BEAN.PACKETS`.
-- The dot is always accented. It is the only coloured element in the mark.
+- Always lowercase. Never `MatthewGSBean.com`, never `MATTHEWGSBEAN.COM`. The domain is
+  written in mixed case in prose and on business cards; the wordmark is not.
+- The dot before `com` is always accented. It is the only coloured element in the mark.
 - Never substitute a shell prompt (`$`) or a caret for the dot. An earlier version used
   `$ beanpackets`; it read as "developer" and did not survive at favicon size.
-- Minimum size 96px wide. Below that, use the dot alone as a mark.
+- Minimum size 128px wide — the mark is longer than the one it replaced and closes up
+  before the old 96px floor. Below that, use the dot alone as a mark.
 - Clearspace: one lowercase `n` height on all sides.
 
 **Never**

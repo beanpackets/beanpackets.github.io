@@ -29,7 +29,7 @@
       <span class="h-3 w-3 rounded-full bg-[#ff5f57]"></span>
       <span class="h-3 w-3 rounded-full bg-[#febc2e]"></span>
       <span class="h-3 w-3 rounded-full bg-[#28c840]"></span>
-      <p class="ml-3 flex-1 truncate font-mono text-xs text-muted">matthew@beanpackets: ~</p>
+      <p class="ml-3 flex-1 truncate font-mono text-xs text-muted">matthew@matthewgsbean: ~</p>
       <button
         type="button"
         data-terminal-close
@@ -138,7 +138,7 @@
       document.body.style.overflow = 'hidden';
       if (!booted) {
         booted = true;
-        line(`${SITE.name} // beanpackets terminal`, 'text-text');
+        line(`${SITE.name} // matthewgsbean terminal`, 'text-text');
         line(`IT Support & Network Professional, ${SITE.location}`);
         line("type 'help' to see available commands", 'text-green');
         blank();
@@ -226,7 +226,7 @@
       line('reach me at:', 'text-text');
       link(SITE.email, LINKS.email, false);
       link(`github.com/${SITE.githubUser}`, LINKS.github);
-      link(`linkedin.com/in/${SITE.githubUser}`, LINKS.linkedin);
+      link(`linkedin.com/in/${SITE.linkedinUser}`, LINKS.linkedin);
     };
 
     const ping = async () => {

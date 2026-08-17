@@ -44,7 +44,7 @@ const NAME_1 = 'Matthew';
 const NAME_2 = 'Bean';
 const ROLE = 'IT support &amp; networking';
 const META = 'Help desk operations  ·  Hardware diagnostics  ·  San Diego, CA';
-const URL = 'beanpackets.github.io';
+const URL = 'matthewgsbean.com';
 
 /* Seeded PRNG (mulberry32) so the mesh is identical on every run. */
 function rng(seed) {

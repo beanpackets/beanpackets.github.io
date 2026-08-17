@@ -1,8 +1,12 @@
-# beanpackets.github.io
+# matthewgsbean.com
 
 Portfolio site for **Matthew Bean**, IT support and networking, San Diego.
 
-Live at **https://beanpackets.github.io**
+Live at **https://matthewgsbean.com**
+
+The custom domain is served by GitHub Pages from `public/CNAME`, which Astro
+copies to the root of `dist/` on every build. Deleting that file silently
+reverts the site to the `github.io` address.
 
 ## Stack
 
