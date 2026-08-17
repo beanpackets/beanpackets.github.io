@@ -17,7 +17,7 @@ const NODES = [
 
 /* Fit the value to the bubble instead of a fixed size — "100%" in the smallest
    node overflows its ring at 34px, "4" is lost at 24px. */
-const fit = (value, unit, r) => {
+const fit = (value: string, unit: string | undefined, r: number) => {
   const chars = String(value).length + (unit ? 1.6 : 0);
   return Math.round(Math.min(34, Math.max(18, (r * 2 - 22) / (chars * 0.6))));
 };

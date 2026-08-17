@@ -1,5 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Nav from '../../components/Nav.astro';
@@ -10,6 +11,12 @@ export const getStaticPaths: GetStaticPaths = async () => {
   const notes = await getCollection('notes', ({ data }) => !data.draft);
   return notes.map((note) => ({ params: { slug: note.id }, props: { note } }));
 };
+
+/* Without this, Astro.props is `unknown` here — the GetStaticPaths annotation
+   on the export stops the props being inferred from it. */
+interface Props {
+  note: CollectionEntry<'notes'>;
+}
 
 const { note } = Astro.props;
 const { Content } = await render(note);

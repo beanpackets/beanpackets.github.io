@@ -151,7 +151,9 @@ const sections = [
     };
 
     toggle.addEventListener('click', () => {
-      setOpen(panel.hidden);
+      // `hidden` is boolean | "until-found" in current DOM types; any truthy
+      // value means the panel is closed.
+      setOpen(Boolean(panel.hidden));
     });
 
     // Any navigation choice closes the menu.
