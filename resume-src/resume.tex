@@ -72,8 +72,9 @@ prioritization against SLA, login, permissions, connectivity, and SSO troublesho
 reproduction, and clean escalation to Tier 2/3. Six additional years administering a Salesforce CRM
 and owning records, licensing, and compliance for a producer network. Hands-on with hardware: PC
 builds, component-level diagnostics and repair, and workstation, printer, and peripheral setup.
-Studying for CCNA, with completed Microsoft Learn training in Active Directory Domain Services,
-Microsoft Intune, and Azure Virtual Desktop. San Diego, available full-time.
+Studying for CCNA and running a Linux home lab built on Docker, Pi-hole DNS filtering, Tailscale
+VPN, and tshark packet capture. Completed Microsoft Learn training in Active Directory Domain
+Services, Microsoft Intune, and Azure Virtual Desktop. San Diego, available full-time.
 
 % ------------------------------------------------ skills
 \section*{Technical Skills}
@@ -81,17 +82,18 @@ Microsoft Intune, and Azure Virtual Desktop. San Diego, available full-time.
   \item \textbf{Systems \& Infrastructure:} Windows 10/11 desktop administration and
         troubleshooting; Active Directory fundamentals (Microsoft Learn: Active Directory Domain
         Services); Azure Virtual Desktop \& Windows 365 (Microsoft Learn: deployment and
-        infrastructure monitoring); Microsoft Intune fundamentals; Linux fundamentals (home server
-        administration); basic virtualization concepts
+        infrastructure monitoring); Linux server administration (Raspberry Pi OS, CLI, static IP
+        configuration); Docker container deployment and management; basic virtualization concepts
   \item \textbf{Hardware \& Physical Support:} PC building and component upgrades (RAM, storage,
         GPU); hardware diagnostics and repair, including boot/POST troubleshooting; printer,
         monitor, and peripheral installation and setup
   \item \textbf{Networking (studying for CCNA):} IP addressing \& subnetting, routing \& switching
         fundamentals, VLANs, DNS/DHCP, VPN configuration, basic network security concepts;
-        troubleshooting connectivity, DNS, and access issues
+        troubleshooting connectivity, DNS, and access issues; hands-on with Pi-hole DNS filtering,
+        Tailscale VPN, and packet capture and analysis using tshark and Wireshark
   \item \textbf{Platforms \& Tools:} Salesforce CRM (configuration, records management,
-        automation), GitHub Issues \& Git version control, Google Workspace, join.me; adaptable to
-        Microsoft Office and Adobe Acrobat workflows
+        automation), GitHub Issues \& Git version control, Google Workspace, join.me, Docker,
+        Uptime Kuma, Homarr; adaptable to Microsoft Office and Adobe Acrobat workflows
   \item \textbf{Core Competencies:} Help desk \& ticketing operations, user account
         provisioning/deactivation and permissions management, technical troubleshooting \&
         escalation, SLA management, bug reproduction \& documentation, system/status monitoring,
@@ -239,6 +241,29 @@ Administrator}{2019 -- 2025}
   \item Facing, inventory, and assisting guests with questions and store information
 \end{itemize}
 
+% ------------------------------------------------ home lab
+\section*{Home Lab \& Hardware Projects}
+\begin{itemize}
+  \item Built and upgraded multiple PCs, including component installation/replacement and
+        troubleshooting boot/POST failures
+  \item Built and administer a Raspberry Pi 4 home lab server on Linux with static IP addressing,
+        running services in Docker containers
+  \item Configured Pi-hole for DNS filtering with Cloudflare upstream resolvers, full query logging,
+        and API app-password authentication for integrations
+  \item Configured Tailscale to provide secure encrypted remote access to the lab environment
+  \item Deployed Uptime Kuma for service availability monitoring and Homarr as a unified dashboard,
+        connecting both to Pi-hole through authenticated integrations
+  \item Diagnosed a false-positive outage alert caused by an HTTP 302 redirect on an unauthenticated
+        admin page, and corrected the monitor to a TCP port check
+  \item Capture and analyze live network traffic with tshark using DNS, HTTP, and ICMP display
+        filters; identified WPA2 encryption as the limit on wireless visibility and specified a
+        managed switch with port mirroring as the fix
+  \item Sourced a TP-Link TL-SG105E managed switch to extend the lab into 802.1Q VLAN segmentation,
+        inter-VLAN routing practice, and port-mirroring packet capture
+  \item Installed and configured printers, monitors, and other peripherals across personal and
+        family systems
+\end{itemize}
+
 % ------------------------------------------------ websites & projects
 \section*{Websites \& Technical Projects}
 \textbf{Personal portfolio website}
@@ -270,17 +295,6 @@ Administrator}{2019 -- 2025}
   \item Active cryptocurrency trading and portfolio tracking across major exchanges, with ongoing
         market research
   \item Operated blockchain nodes and interacted with on-chain and DeFi applications
-\end{itemize}
-
-% ------------------------------------------------ home lab
-\section*{Home Lab \& Hardware Projects}
-\begin{itemize}
-  \item Built and upgraded multiple PCs, including component installation/replacement and
-        troubleshooting boot/POST failures
-  \item Designed and maintain a home server environment: DNS filtering, VPN configuration, and
-        uptime monitoring
-  \item Installed and configured printers, monitors, and other peripherals across personal and
-        family systems
 \end{itemize}
 
 % ------------------------------------------------ drone & rf
