@@ -1,0 +1,897 @@
+---
+import { PUBLIC_MODES, DEFAULT_MODE } from '../lib/chat/modes';
+import { LIMITS } from '../lib/chat/limits';
+
+/**
+ * Demo chat assistant.
+ *
+ * The endpoint lives in a separate Cloudflare Worker, not in this site: GitHub
+ * Pages is static hosting and cannot run server code, hold an API key, or talk
+ * to a model provider. `apiPath` is therefore a full cross-origin URL, and the
+ * Worker answers CORS preflight for this domain specifically.
+ *
+ * Styling uses this site's own custom properties rather than utility classes,
+ * so the panel inherits the terminal palette instead of fighting it.
+ */
+
+interface Props {
+  /** Cloudflare Turnstile site key. Public by design; safe in markup. */
+  siteKey: string;
+  /** Full URL of the chat Worker endpoint. */
+  apiPath: string;
+  /** Label on the closed launcher. Floating variant only. */
+  launcherLabel?: string;
+  /**
+   * 'floating' is the corner launcher: a fixed bubble that opens a panel over
+   * the page. 'inline' drops the panel into normal flow at its mount point,
+   * always open, with no launcher and no close button. The hero uses 'inline'.
+   */
+  variant?: 'floating' | 'inline';
+}
+
+const {
+  siteKey,
+  apiPath,
+  launcherLabel = 'Ask the assistant',
+  variant = 'floating',
+} = Astro.props;
+
+const inline = variant === 'inline';
+
+const clientConfig = {
+  apiPath,
+  siteKey,
+  defaultMode: DEFAULT_MODE,
+  modes: PUBLIC_MODES,
+  limits: { MAX_MESSAGES: LIMITS.MAX_MESSAGES, MAX_MESSAGE_CHARS: LIMITS.MAX_MESSAGE_CHARS },
+};
+
+// JSON.stringify does not escape `</script>`, which would terminate the element
+// early. Escaping `<` is still valid JSON and closes that hole.
+const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
+---
+
+<div id="ai-chatbot" class:list={['chat-root', inline && 'chat-root-inline']}>
+  <script type="application/json" data-chat-config is:inline set:html={serializedConfig} />
+
+  <section
+    data-panel
+    data-open={inline ? 'true' : 'false'}
+    class="chat-panel"
+    role={inline ? 'region' : 'dialog'}
+    aria-label="Site assistant"
+  >
+    <header class="chat-header">
+      <div class="chat-title-wrap">
+        <h2 class="chat-title">
+          <span class="chat-dot" aria-hidden="true"></span>
+          assistant
+          <span class="chat-badge">demo</span>
+        </h2>
+        <p data-tagline class="chat-tagline"></p>
+      </div>
+      {!inline && (
+        <button type="button" data-close class="chat-icon-btn" aria-label="Close assistant">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+            <path d="M5 5l10 10M15 5L5 15" stroke-linecap="round" />
+          </svg>
+        </button>
+      )}
+    </header>
+
+    <div class="chat-modes">
+      <div role="tablist" aria-label="Assistant mode" data-modes class="chat-tablist">
+        {PUBLIC_MODES.map((mode) => (
+          <button
+            type="button"
+            role="tab"
+            data-mode={mode.id}
+            aria-selected={mode.id === DEFAULT_MODE ? 'true' : 'false'}
+            class="chat-tab"
+          >
+            {mode.label}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div data-transcript class="chat-transcript" aria-live="polite" aria-atomic="false"></div>
+    <div data-suggestions class="chat-suggestions"></div>
+    <div data-turnstile class="chat-turnstile"></div>
+
+    <form data-form class="chat-form">
+      <textarea
+        data-input
+        class="chat-input"
+        rows="1"
+        placeholder="Type your question..."
+        maxlength={LIMITS.MAX_MESSAGE_CHARS}
+        aria-label="Your question"
+      ></textarea>
+      <button type="submit" data-send class="chat-send" aria-label="Send">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+          <path d="M3 10h12M10 4l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </form>
+
+    <p class="chat-disclaimer">
+      Demo assistant answering questions about Life Science IT. Responses are AI-generated, so
+      confirm anything important directly.
+    </p>
+  </section>
+
+  {!inline && (
+    <button type="button" data-launcher class="chat-launcher" aria-expanded="false">
+      <span class="chat-launcher-dot" aria-hidden="true"></span>
+      {launcherLabel}
+    </button>
+  )}
+</div>
+
+<style>
+  .chat-root {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 1rem;
+    pointer-events: none;
+  }
+
+  @media (min-width: 640px) {
+    .chat-root { padding: 1.5rem; }
+  }
+
+  /* Inline variant. The panel sits in normal flow and fills whatever box the
+     page gives it, so the hero controls the size rather than the component.
+     Everything below is an override of the fixed-corner defaults above. */
+  .chat-root-inline {
+    position: static;
+    padding: 0;
+    z-index: auto;
+    width: 100%;
+    height: 100%;
+    align-items: stretch;
+    pointer-events: auto;
+  }
+
+  .chat-root-inline .chat-panel {
+    margin-bottom: 0;
+    width: 100%;
+    height: 100%;
+    /* Translucent over the hero canvas, which is the point of putting it here.
+       The blur keeps the transcript readable while the particles move behind
+       it. Fallback background is opaque for browsers without backdrop-filter. */
+    background: color-mix(in oklab, var(--color-ground) 82%, transparent);
+    box-shadow:
+      0 0 0 1px rgb(57 255 20 / 8%),
+      0 24px 60px rgb(0 0 0 / 55%);
+  }
+
+  @supports (backdrop-filter: blur(1px)) {
+    .chat-root-inline .chat-panel {
+      backdrop-filter: blur(10px) saturate(140%);
+    }
+  }
+
+  /* The greeting is longer than the transcript box on a phone, so the first
+     thing a visitor sees is a bubble cut off by the suggestion chips below it.
+     Fading the last few pixels turns that hard edge into an obvious "there is
+     more above and below", which is what it actually means. */
+  .chat-root-inline .chat-transcript {
+    mask-image: linear-gradient(to bottom, transparent 0, #000 0.75rem, #000 calc(100% - 0.75rem), transparent 100%);
+  }
+
+  .chat-root-inline .chat-suggestions {
+    padding-top: 0.15rem;
+  }
+
+  /* Launcher */
+  .chat-launcher {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--color-edge-bright);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-accent-ink);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 45%);
+  }
+
+  .chat-launcher:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 1px rgb(57 255 20 / 25%), 0 10px 28px rgb(0 0 0 / 55%);
+  }
+
+  .chat-launcher:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .chat-launcher-dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 999px;
+    background: var(--color-accent);
+    box-shadow: 0 0 8px var(--color-accent);
+  }
+
+  /* Panel */
+  .chat-panel {
+    pointer-events: auto;
+    margin-bottom: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: min(24rem, calc(100vw - 2rem));
+    height: min(30rem, calc(100vh - 8rem));
+    border: 1px solid var(--color-edge-bright);
+    border-radius: 0.75rem;
+    background: var(--color-ground);
+    box-shadow: 0 20px 50px rgb(0 0 0 / 60%);
+    transition: opacity 220ms ease, transform 220ms ease;
+  }
+
+  .chat-panel[data-open='false'] {
+    opacity: 0;
+    transform: translateY(0.75rem);
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chat-panel, .chat-launcher { transition: none; }
+  }
+
+  .chat-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 0.9rem;
+    border-bottom: 1px solid var(--color-edge);
+    background: var(--color-surface);
+  }
+
+  .chat-title {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    letter-spacing: 0.02em;
+  }
+
+  .chat-dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 999px;
+    background: var(--color-accent);
+    box-shadow: 0 0 8px var(--color-accent);
+  }
+
+  .chat-badge {
+    padding: 0.05rem 0.35rem;
+    border: 1px solid var(--color-edge-bright);
+    border-radius: 0.25rem;
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .chat-tagline {
+    margin: 0.2rem 0 0;
+    font-size: 0.6875rem;
+    color: var(--color-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chat-icon-btn {
+    flex-shrink: 0;
+    padding: 0.35rem;
+    border: none;
+    border-radius: 0.375rem;
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    line-height: 0;
+  }
+
+  .chat-icon-btn svg { width: 0.9rem; height: 0.9rem; }
+  .chat-icon-btn:hover { color: var(--color-text); background: var(--color-edge); }
+  .chat-icon-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+
+  /* Mode tabs */
+  .chat-modes { padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--color-edge); }
+
+  .chat-tablist {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem;
+    padding: 0.2rem;
+    border: 1px solid var(--color-edge);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+  }
+
+  .chat-tab {
+    padding: 0.35rem 0.5rem;
+    border: none;
+    border-radius: 0.375rem;
+    background: transparent;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    cursor: pointer;
+    transition: color 140ms ease, background 140ms ease;
+  }
+
+  .chat-tab[aria-selected='true'] {
+    background: var(--color-edge);
+    color: var(--color-accent-ink);
+  }
+
+  .chat-tab:hover:not([aria-selected='true']) { color: var(--color-text); }
+  .chat-tab:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+  .chat-tab:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* Transcript */
+  .chat-transcript {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-edge-bright) transparent;
+  }
+
+  .chat-transcript :global(.row) { display: flex; }
+  .chat-transcript :global(.row-user) { justify-content: flex-end; }
+  .chat-transcript :global(.row-bot) { justify-content: flex-start; }
+
+  .chat-transcript :global(.bubble) {
+    max-width: 85%;
+    padding: 0.5rem 0.7rem;
+    border-radius: 0.6rem;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .chat-transcript :global(.bubble-user) {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font-weight: 500;
+  }
+
+  .chat-transcript :global(.bubble-bot) {
+    background: var(--color-surface);
+    border: 1px solid var(--color-edge);
+    color: var(--color-text);
+  }
+
+  .chat-transcript :global(.bubble-system) {
+    background: transparent;
+    border: 1px dashed var(--color-edge-bright);
+    color: var(--color-muted);
+    font-size: 0.75rem;
+  }
+
+  .chat-transcript :global(.typing) { display: flex; gap: 0.25rem; padding: 0.6rem 0.7rem; }
+
+  .chat-transcript :global(.typing span) {
+    width: 0.3rem;
+    height: 0.3rem;
+    border-radius: 999px;
+    background: var(--color-muted);
+    animation: chat-bounce 1.1s infinite ease-in-out;
+  }
+
+  @keyframes chat-bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-0.25rem); opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chat-transcript :global(.typing span) { animation: none; }
+  }
+
+  /* Suggestions */
+  .chat-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0 0.9rem;
+  }
+
+  .chat-suggestions:empty { display: none; }
+
+  .chat-suggestions :global(button) {
+    padding: 0.3rem 0.6rem;
+    border: 1px solid var(--color-edge);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-muted);
+    font-size: 0.6875rem;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 140ms ease, color 140ms ease;
+  }
+
+  .chat-suggestions :global(button:hover) {
+    border-color: var(--color-edge-bright);
+    color: var(--color-text);
+  }
+
+  .chat-turnstile:not(:empty) { padding: 0.5rem 0.9rem 0; }
+
+  /* Composer */
+  .chat-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    padding: 0.7rem 0.9rem 0.4rem;
+  }
+
+  .chat-input {
+    flex: 1 1 auto;
+    max-height: 7rem;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid var(--color-edge);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    resize: none;
+  }
+
+  .chat-input::placeholder { color: var(--color-muted); }
+  .chat-input:focus { outline: none; border-color: var(--color-edge-bright); }
+  .chat-input:disabled { opacity: 0.55; }
+
+  .chat-send {
+    flex-shrink: 0;
+    padding: 0.5rem;
+    border: 1px solid var(--color-accent);
+    border-radius: 0.5rem;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    cursor: pointer;
+    line-height: 0;
+  }
+
+  .chat-send svg { width: 1rem; height: 1rem; }
+  .chat-send:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .chat-send:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .chat-disclaimer {
+    margin: 0;
+    padding: 0 0.9rem 0.7rem;
+    font-size: 0.625rem;
+    line-height: 1.4;
+    color: var(--color-muted);
+    opacity: 0.75;
+  }
+</style>
+
+<script>
+  import type { Mode, ModePresentation } from '../lib/chat/modes';
+
+  interface ChatConfig {
+    apiPath: string;
+    siteKey: string;
+    defaultMode: Mode;
+    modes: ModePresentation[];
+    limits: { MAX_MESSAGES: number; MAX_MESSAGE_CHARS: number };
+  }
+
+  interface Turn {
+    role: 'user' | 'assistant';
+    content: string;
+  }
+
+  declare global {
+    interface Window {
+      turnstile?: {
+        render: (el: HTMLElement, opts: Record<string, unknown>) => string;
+        reset: (id?: string) => void;
+      };
+    }
+  }
+
+  const TURNSTILE_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+
+  function init(root: HTMLElement): void {
+    const configEl = root.querySelector<HTMLScriptElement>('[data-chat-config]');
+    if (!configEl?.textContent) return;
+    const config = JSON.parse(configEl.textContent) as ChatConfig;
+
+    /* The inline variant has no launcher and no close button: the panel is
+       always open and lives in the page. Both are therefore optional here. */
+    const inline = root.classList.contains('chat-root-inline');
+    const panel = root.querySelector<HTMLElement>('[data-panel]')!;
+    const launcher = root.querySelector<HTMLButtonElement>('[data-launcher]');
+    const closeBtn = root.querySelector<HTMLButtonElement>('[data-close]');
+    const transcriptEl = root.querySelector<HTMLElement>('[data-transcript]')!;
+    const suggestionsEl = root.querySelector<HTMLElement>('[data-suggestions]')!;
+    const turnstileEl = root.querySelector<HTMLElement>('[data-turnstile]')!;
+    const form = root.querySelector<HTMLFormElement>('[data-form]')!;
+    const input = root.querySelector<HTMLTextAreaElement>('[data-input]')!;
+    const sendBtn = root.querySelector<HTMLButtonElement>('[data-send]')!;
+    const taglineEl = root.querySelector<HTMLElement>('[data-tagline]')!;
+    const modeButtons = Array.from(
+      root.querySelectorAll<HTMLButtonElement>('[data-modes] [data-mode]'),
+    );
+
+    const modes = new Map(config.modes.map((mode) => [mode.id, mode]));
+    const histories = new Map<string, Turn[]>(config.modes.map((mode) => [mode.id, []]));
+
+    let currentMode: string = config.defaultMode;
+    let sessionToken: string | null = null;
+    let turnstilePromise: Promise<string> | null = null;
+    let turnstileWidgetId: string | null = null;
+    let busy = false;
+    let lastFocused: HTMLElement | null = null;
+
+    const scrollToEnd = () => {
+      transcriptEl.scrollTop = transcriptEl.scrollHeight;
+    };
+
+    function bubble(role: 'user' | 'assistant' | 'system', text: string): HTMLElement {
+      const row = document.createElement('div');
+      row.className = role === 'user' ? 'row row-user' : 'row row-bot';
+
+      const el = document.createElement('div');
+      el.className =
+        'bubble ' +
+        (role === 'user' ? 'bubble-user' : role === 'system' ? 'bubble-system' : 'bubble-bot');
+
+      // textContent only. Model output is shaped by anonymous visitor input and
+      // is never treated as markup.
+      el.textContent = text;
+      row.appendChild(el);
+      transcriptEl.appendChild(row);
+      scrollToEnd();
+      return el;
+    }
+
+    function typingIndicator(): HTMLElement {
+      const row = document.createElement('div');
+      row.className = 'row row-bot';
+      row.dataset.typing = '';
+
+      const el = document.createElement('div');
+      el.className = 'bubble bubble-bot typing';
+      el.setAttribute('aria-label', 'Assistant is typing');
+      for (let i = 0; i < 3; i += 1) {
+        const dot = document.createElement('span');
+        dot.style.animationDelay = `${i * 140}ms`;
+        el.appendChild(dot);
+      }
+
+      row.appendChild(el);
+      transcriptEl.appendChild(row);
+      scrollToEnd();
+      return row;
+    }
+
+    function renderSuggestions(): void {
+      suggestionsEl.replaceChildren();
+      const mode = modes.get(currentMode);
+      if (!mode || histories.get(currentMode)!.length > 0 || busy) return;
+
+      for (const suggestion of mode.suggestions) {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.textContent = suggestion;
+        chip.addEventListener('click', () => {
+          input.value = suggestion;
+          void submit();
+        });
+        suggestionsEl.appendChild(chip);
+      }
+    }
+
+    function renderMode(): void {
+      const mode = modes.get(currentMode)!;
+      taglineEl.textContent = mode.tagline;
+
+      for (const button of modeButtons) {
+        button.setAttribute('aria-selected', button.dataset.mode === currentMode ? 'true' : 'false');
+      }
+
+      transcriptEl.replaceChildren();
+      bubble('assistant', mode.greeting);
+      for (const turn of histories.get(currentMode)!) bubble(turn.role, turn.content);
+      renderSuggestions();
+    }
+
+    function loadTurnstileScript(): Promise<void> {
+      if (window.turnstile) return Promise.resolve();
+
+      const existing = document.querySelector<HTMLScriptElement>(`script[src="${TURNSTILE_SRC}"]`);
+      if (existing) {
+        return new Promise((resolve, reject) => {
+          existing.addEventListener('load', () => resolve(), { once: true });
+          existing.addEventListener('error', () => reject(new Error('turnstile')), { once: true });
+        });
+      }
+
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = TURNSTILE_SRC;
+        script.async = true;
+        script.defer = true;
+        script.addEventListener('load', () => resolve(), { once: true });
+        script.addEventListener('error', () => reject(new Error('turnstile')), { once: true });
+        document.head.appendChild(script);
+      });
+    }
+
+    async function turnstileToken(): Promise<string> {
+      if (turnstilePromise) return turnstilePromise;
+
+      turnstilePromise = (async () => {
+        await loadTurnstileScript();
+        if (!window.turnstile) throw new Error('turnstile unavailable');
+
+        return new Promise<string>((resolve, reject) => {
+          turnstileWidgetId = window.turnstile!.render(turnstileEl, {
+            sitekey: config.siteKey,
+            appearance: 'interaction-only',
+            theme: 'dark',
+            callback: (token: string) => resolve(token),
+            'error-callback': () => reject(new Error('turnstile error')),
+            'timeout-callback': () => reject(new Error('turnstile timeout')),
+          });
+        });
+      })();
+
+      turnstilePromise.catch(() => {
+        turnstilePromise = null;
+      });
+
+      return turnstilePromise;
+    }
+
+    function resetTurnstile(): void {
+      turnstilePromise = null;
+      if (turnstileWidgetId && window.turnstile) window.turnstile.reset(turnstileWidgetId);
+    }
+
+    function setBusy(next: boolean): void {
+      busy = next;
+      sendBtn.disabled = next;
+      input.disabled = next;
+      for (const button of modeButtons) {
+        button.disabled = next;
+        button.setAttribute('aria-disabled', String(next));
+      }
+      if (!next) renderSuggestions();
+    }
+
+    /**
+     * Trim to the server's cap, keeping the window opening on a user turn. A
+     * transcript always ends on one, so an even-sized window over an odd-length
+     * history would start on an assistant turn, which the provider rejects.
+     */
+    function trimHistory(turns: Turn[]): Turn[] {
+      const window_ = turns.slice(-config.limits.MAX_MESSAGES);
+      return window_[0]?.role === 'assistant' ? window_.slice(1) : window_;
+    }
+
+    async function submit(): Promise<void> {
+      if (busy) return;
+      const text = input.value.trim();
+      if (!text) return;
+
+      const history = histories.get(currentMode)!;
+
+      input.value = '';
+      input.style.height = 'auto';
+      suggestionsEl.replaceChildren();
+      bubble('user', text);
+      history.push({ role: 'user', content: text });
+
+      setBusy(true);
+      const indicator = typingIndicator();
+
+      try {
+        const payload: Record<string, unknown> = {
+          mode: currentMode,
+          messages: trimHistory(history),
+        };
+
+        if (sessionToken) payload.sessionToken = sessionToken;
+        else payload.turnstileToken = await turnstileToken();
+
+        const response = await fetch(config.apiPath, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        const issued = response.headers.get('X-Chat-Session');
+        if (issued) sessionToken = issued;
+
+        if (!response.ok || !response.body) {
+          if (response.status === 403) {
+            sessionToken = null;
+            resetTurnstile();
+          }
+
+          let message = 'Something went wrong. Please try again.';
+          try {
+            const body = (await response.json()) as { error?: string };
+            if (typeof body.error === 'string') message = body.error;
+          } catch {
+            /* keep default */
+          }
+
+          indicator.remove();
+          bubble('system', message);
+          history.pop();
+          return;
+        }
+
+        indicator.remove();
+        const target = bubble('assistant', '');
+        let answer = '';
+        let failed = false;
+        let truncated = false;
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const frames = buffer.split('\n\n');
+          buffer = frames.pop() ?? '';
+
+          for (const frame of frames) {
+            const line = frame.split('\n').find((l) => l.startsWith('data: '));
+            if (!line) continue;
+
+            let event: { type: string; text?: string; message?: string; truncated?: boolean };
+            try {
+              event = JSON.parse(line.slice(6));
+            } catch {
+              continue;
+            }
+
+            if (event.type === 'delta' && event.text) {
+              answer += event.text;
+              target.textContent = answer;
+              scrollToEnd();
+            } else if (event.type === 'done') {
+              truncated = event.truncated === true;
+            } else if (event.type === 'error') {
+              failed = true;
+              target.remove();
+              bubble('system', event.message ?? 'Something went wrong.');
+            }
+          }
+        }
+
+        if (failed || !answer) {
+          if (!failed) {
+            target.remove();
+            bubble('system', 'No response was returned. Please try again.');
+          }
+          history.pop();
+        } else {
+          history.push({ role: 'assistant', content: answer });
+          if (truncated) bubble('system', 'That answer was cut short. Try asking something narrower.');
+        }
+      } catch (error) {
+        indicator.remove();
+        bubble(
+          'system',
+          error instanceof Error && error.message.startsWith('turnstile')
+            ? 'Verification could not be completed. Please reload the page and try again.'
+            : 'Could not reach the assistant. Check your connection and try again.',
+        );
+        history.pop();
+      } finally {
+        setBusy(false);
+        input.focus();
+      }
+    }
+
+    function setOpen(open: boolean): void {
+      if (inline) return;
+      panel.dataset.open = String(open);
+      launcher?.setAttribute('aria-expanded', String(open));
+
+      if (open) {
+        lastFocused = document.activeElement as HTMLElement | null;
+        if (!sessionToken) void turnstileToken().catch(() => {});
+        window.requestAnimationFrame(() => window.requestAnimationFrame(() => input.focus()));
+      } else {
+        lastFocused?.focus?.();
+      }
+    }
+
+    launcher?.addEventListener('click', () => setOpen(panel.dataset.open !== 'true'));
+    closeBtn?.addEventListener('click', () => setOpen(false));
+
+    if (!inline) {
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && panel.dataset.open === 'true') setOpen(false);
+      });
+    }
+
+    /* The floating panel warms Turnstile when it opens. The inline panel is
+       open from first paint, so warming it there would mean a challenge on
+       every page load for every visitor, most of whom never type. Wait for a
+       real signal of intent instead: the first focus of the composer. */
+    if (inline) {
+      input.addEventListener(
+        'focus',
+        () => {
+          if (!sessionToken) void turnstileToken().catch(() => {});
+        },
+        { once: true },
+      );
+    }
+
+    for (const button of modeButtons) {
+      button.addEventListener('click', () => {
+        const next = button.dataset.mode;
+        if (!next || next === currentMode || busy) return;
+        currentMode = next;
+        renderMode();
+        input.focus();
+      });
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      void submit();
+    });
+
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        void submit();
+      }
+    });
+
+    input.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = `${Math.min(input.scrollHeight, 112)}px`;
+    });
+
+    renderMode();
+  }
+
+  const root = document.getElementById('ai-chatbot');
+  if (root) init(root);
+</script>

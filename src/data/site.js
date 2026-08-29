@@ -33,3 +33,18 @@ export const ANALYTICS = {
   /** @type {string | null} */
   code: null,
 };
+
+/* Demo chat assistant. The endpoint is a separate Cloudflare Worker, not part
+   of this site: GitHub Pages is static hosting and cannot run server code or
+   hold an API key. Kept here because the origin has to appear in the CSP's
+   connect-src, and third-party origins live in this file. */
+export const CHAT = {
+  origin: 'https://matthewgsbean-chat.bean-packets.workers.dev',
+  endpoint: 'https://matthewgsbean-chat.bean-packets.workers.dev/api/chat',
+  /* Turnstile SITE key. Public by design - it is rendered into the page for
+     every visitor to read. Committed rather than kept in .env because the
+     GitHub Actions build has no .env, and an undefined key breaks the widget
+     in production while working perfectly on your machine. The SECRET key is
+     the one that must never appear here; it lives in the Worker. */
+  turnstileSiteKey: '0x4AAAAAAEdaDAIkcbcoSLdX',
+};

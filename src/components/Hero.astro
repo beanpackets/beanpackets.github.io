@@ -1,10 +1,15 @@
 ---
-import { SITE } from '../data/site.js';
+import { SITE, CHAT } from '../data/site.js';
 import Icon from './Icon.astro';
+import AIChatbot from './AIChatbot.astro';
 
-/* The generative canvas IS the hero. Copy sits centred on top of it, over a
-   radial scrim that keeps the type readable whatever the canvas is doing.
-   Mode controls sit at the foot of the section. */
+/* The generative canvas IS the hero. Copy and the assistant sit on top of it,
+   over a radial scrim that keeps both readable whatever the canvas is doing.
+   Mode controls sit at the foot of the section.
+
+   The assistant is mounted inline here rather than as a corner launcher, so it
+   is the first thing a visitor sees rather than something they have to find.
+   Below lg the two stack: copy first, assistant under it. */
 ---
 
 <section class="hero relative isolate flex min-h-svh flex-col overflow-hidden pt-16">
@@ -23,8 +28,11 @@ import Icon from './Icon.astro';
   <div class="hero-scan pointer-events-none absolute inset-0 z-[3]" aria-hidden="true"></div>
 
   <div class="relative z-10 flex flex-1 items-center justify-center">
-    <div class="shell flex flex-col items-center py-16 text-center md:py-20">
-      <p class="mb-7 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm">
+    <div
+      class="shell grid w-full items-center gap-7 py-10 sm:gap-9 md:py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,25rem)] lg:gap-14"
+    >
+    <div class="flex flex-col items-center text-center lg:items-start lg:text-left">
+      <p class="mb-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm md:mb-7 lg:justify-start">
         <span class="text-accent-ink">{SITE.availability}</span>
         <span class="text-muted" aria-hidden="true">/</span>
         <span class="text-muted">{SITE.location}</span>
@@ -34,11 +42,11 @@ import Icon from './Icon.astro';
         Matthew<br /><span class="neon-accent">Bean</span>
       </h1>
 
-      <p class="mt-7 font-display text-[clamp(1.15rem,2.6vw,1.55rem)] leading-snug">
+      <p class="mt-5 font-display text-[clamp(1.15rem,2.6vw,1.55rem)] leading-snug md:mt-7">
         IT support <span class="text-muted">&amp;</span> networking
       </p>
 
-      <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
+      <div class="mt-7 flex flex-wrap items-center justify-center gap-3 md:mt-9 lg:justify-start">
         <a
           href="#work"
           class="group inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-on-accent shadow-[0_0_26px_-4px_rgba(57,255,20,0.55)] transition-shadow hover:shadow-[0_0_40px_-4px_rgba(57,255,20,0.8)]"
@@ -58,7 +66,7 @@ import Icon from './Icon.astro';
       <button
         type="button"
         data-terminal-open
-        class="mt-12 hidden items-center gap-2 font-mono text-xs text-muted transition-colors hover:text-accent-ink md:inline-flex"
+        class="mt-10 hidden items-center gap-2 font-mono text-xs text-muted transition-colors hover:text-accent-ink md:inline-flex"
       >
         <span
           class="inline-flex items-center rounded border border-edge bg-surface-2 px-1.5 py-0.5 text-[0.7rem]"
@@ -68,6 +76,11 @@ import Icon from './Icon.astro';
         </span>
         press for terminal
       </button>
+    </div>
+
+      <div class="hero-assistant w-full max-w-md justify-self-center lg:max-w-none lg:justify-self-end">
+        <AIChatbot variant="inline" siteKey={CHAT.turnstileSiteKey} apiPath={CHAT.endpoint} />
+      </div>
     </div>
   </div>
 
@@ -87,6 +100,24 @@ import Icon from './Icon.astro';
 </section>
 
 <style>
+  /* The assistant needs a fixed box: its transcript scrolls internally, so an
+     auto height would grow the hero every time a reply came in. svh rather
+     than vh so a mobile browser's collapsing toolbar does not clip the
+     composer off the bottom. */
+  .hero-assistant {
+    /* Below lg the panel sits under the copy, so the hero is already taller
+       than the viewport. Keeping it short here means the composer and the
+       suggestion chips land above the fold on a phone instead of being sliced
+       in half by it. */
+    height: clamp(20rem, 52svh, 25rem);
+  }
+
+  @media (min-width: 1024px) {
+    .hero-assistant {
+      height: clamp(24rem, 62svh, 30rem);
+    }
+  }
+
   .hero-floor {
     opacity: 0.18;
     background-image:

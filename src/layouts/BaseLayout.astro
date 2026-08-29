@@ -1,5 +1,5 @@
 ---
-import { SITE, LINKS, ANALYTICS } from '../data/site.js';
+import { SITE, LINKS, ANALYTICS, CHAT } from '../data/site.js';
 import Terminal from '../components/Terminal.astro';
 import '../styles/global.css';
 
@@ -34,10 +34,14 @@ const csp = [
   "object-src 'none'",
   "form-action 'none'",
   "img-src 'self' data:",
+  // Turnstile renders in an iframe from challenges.cloudflare.com and loads its
+  // script from the same origin. Without both, the widget silently fails to
+  // appear and the assistant rejects every first message.
+  'frame-src https://challenges.cloudflare.com',
   "font-src 'self'",
   "style-src 'self'",
-  `script-src 'self'${gc ? ' https://gc.zgo.at' : ''}`,
-  `connect-src 'self' https://api.github.com${gc ? ' https://' + gc + '.goatcounter.com' : ''}`,
+  `script-src 'self' https://challenges.cloudflare.com${gc ? ' https://gc.zgo.at' : ''}`,
+  `connect-src 'self' https://api.github.com ${CHAT.origin}${gc ? ' https://' + gc + '.goatcounter.com' : ''}`,
   'upgrade-insecure-requests',
 ].join('; ');
 
