@@ -939,14 +939,30 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
         timer = undefined;
       };
 
+      /* A Turnstile token is single-use: the Worker consumes it the moment it
+         validates it, and Cloudflare rejects the second presentation as a
+         duplicate. So it is spent by the act of sending, whatever comes back.
+         Caching it past that point means every other message is rejected,
+         which is what happens whenever no session token replaces it -- and the
+         usual reason none does is a Worker that omits X-Chat-Session from
+         Access-Control-Expose-Headers, leaving the header unreadable here.
+         Dropping it on send keeps the session token a pure optimisation rather
+         than a requirement: without one the visitor is re-challenged per
+         message, which is a cost, not a failure. */
+      let spentToken = false;
+
       try {
         const payload: Record<string, unknown> = {
           mode: currentMode,
           messages: trimHistory(history),
         };
 
-        if (sessionToken) payload.sessionToken = sessionToken;
-        else payload.turnstileToken = await turnstileToken();
+        if (sessionToken) {
+          payload.sessionToken = sessionToken;
+        } else {
+          payload.turnstileToken = await turnstileToken();
+          spentToken = true;
+        }
 
         const response = await fetch(config.apiPath, {
           method: 'POST',
@@ -1064,6 +1080,7 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
         markUnsent(userBubble);
       } finally {
         stopTimer();
+        if (spentToken) invalidateToken();
         setBusy(false);
         input.focus();
       }
