@@ -43,7 +43,11 @@ const clientConfig = {
   siteKey,
   defaultMode: DEFAULT_MODE,
   modes: PUBLIC_MODES,
-  limits: { MAX_MESSAGES: LIMITS.MAX_MESSAGES, MAX_MESSAGE_CHARS: LIMITS.MAX_MESSAGE_CHARS },
+  limits: {
+    MAX_MESSAGES: LIMITS.MAX_MESSAGES,
+    MAX_MESSAGE_CHARS: LIMITS.MAX_MESSAGE_CHARS,
+    MAX_TOTAL_CHARS: LIMITS.MAX_TOTAL_CHARS,
+  },
 };
 
 // JSON.stringify does not escape `</script>`, which would terminate the element
@@ -417,7 +421,7 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
   }
 
   .chat-transcript :global(.row) { display: flex; }
-  .chat-transcript :global(.row-user) { justify-content: flex-end; }
+  .chat-transcript :global(.row-user) { justify-content: flex-end; align-items: center; gap: 0.4rem; }
   .chat-transcript :global(.row-bot) { justify-content: flex-start; }
 
   .chat-transcript :global(.bubble) {
@@ -440,6 +444,25 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
     background: var(--color-surface);
     border: 1px solid var(--color-edge);
     color: var(--color-text);
+  }
+
+  /* A turn the Worker never received. It stays on screen because deleting it
+     would be its own kind of lie, but it is dimmed and labelled so the visitor
+     knows the assistant has no idea it exists. */
+  .chat-transcript :global(.bubble-failed) {
+    opacity: 0.5;
+    border: 1px dashed var(--color-edge-bright);
+    background: transparent;
+    color: var(--color-muted);
+  }
+
+  .chat-transcript :global(.unsent) {
+    order: -1;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
   }
 
   .chat-transcript :global(.bubble-system) {
@@ -549,6 +572,7 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
 </style>
 
 <script>
+  import { isMode } from '../lib/chat/modes';
   import type { Mode, ModePresentation } from '../lib/chat/modes';
 
   interface ChatConfig {
@@ -556,7 +580,7 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
     siteKey: string;
     defaultMode: Mode;
     modes: ModePresentation[];
-    limits: { MAX_MESSAGES: number; MAX_MESSAGE_CHARS: number };
+    limits: { MAX_MESSAGES: number; MAX_MESSAGE_CHARS: number; MAX_TOTAL_CHARS: number };
   }
 
   interface Turn {
@@ -567,13 +591,41 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
   declare global {
     interface Window {
       turnstile?: {
-        render: (el: HTMLElement, opts: Record<string, unknown>) => string;
+        /** Returns undefined when the render is refused, e.g. a duplicate. */
+        render: (el: HTMLElement, opts: Record<string, unknown>) => string | undefined;
         reset: (id?: string) => void;
       };
     }
   }
 
   const TURNSTILE_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+
+  /* Every wait in this component is bounded. A callback API that never fires
+     and a network request that never returns both look exactly like a slow
+     one, so the only way to tell them apart is to decide when to stop waiting.
+     Without these the composer stays disabled forever and the visitor has no
+     way back but a reload. */
+  const TURNSTILE_TIMEOUT_MS = 25_000;
+  /** Budget to the first byte. The stream gets its own idle budget below. */
+  const REQUEST_TIMEOUT_MS = 30_000;
+  /** Longest silence tolerated mid-stream before the answer is called dead. */
+  const STREAM_IDLE_TIMEOUT_MS = 20_000;
+
+  function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error(message)), ms);
+      promise.then(
+        (value) => {
+          clearTimeout(timer);
+          resolve(value);
+        },
+        (error) => {
+          clearTimeout(timer);
+          reject(error);
+        },
+      );
+    });
+  }
 
   function init(root: HTMLElement): void {
     const configEl = root.querySelector<HTMLScriptElement>('[data-chat-config]');
@@ -600,10 +652,12 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
     const modes = new Map(config.modes.map((mode) => [mode.id, mode]));
     const histories = new Map<string, Turn[]>(config.modes.map((mode) => [mode.id, []]));
 
-    let currentMode: string = config.defaultMode;
+    let currentMode: Mode = config.defaultMode;
     let sessionToken: string | null = null;
     let turnstilePromise: Promise<string> | null = null;
     let turnstileWidgetId: string | null = null;
+    /* Whoever is waiting on the widget right now, if anyone. See turnstileToken. */
+    let pending: { resolve: (token: string) => void; reject: (error: Error) => void } | null = null;
     let busy = false;
     let lastFocused: HTMLElement | null = null;
 
@@ -702,35 +756,95 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
       });
     }
 
+    /**
+     * Acquire a Turnstile token.
+     *
+     * The widget is rendered ONCE and reused. Turnstile refuses to render a
+     * second widget into an element that already holds one, and it refuses
+     * silently: `render` returns undefined and neither callback fires, so a
+     * promise waiting on them never settles. Rendering again after a reset is
+     * therefore not a retry, it is a permanent hang.
+     *
+     * Re-challenging goes through `reset()` instead. But a widget's callbacks
+     * are fixed when it is rendered, and those callbacks close over the first
+     * request's promise, which is already settled by the time a reset happens.
+     * Resolving a settled promise is a silent no-op, so the fresh token would
+     * be delivered into a sealed box and lost. `pending` is the indirection
+     * that fixes it: the callbacks always hand the token to whichever request
+     * is waiting now, rather than to the one that happened to render.
+     */
     async function turnstileToken(): Promise<string> {
       if (turnstilePromise) return turnstilePromise;
 
-      turnstilePromise = (async () => {
-        await loadTurnstileScript();
-        if (!window.turnstile) throw new Error('turnstile unavailable');
-
-        return new Promise<string>((resolve, reject) => {
-          turnstileWidgetId = window.turnstile!.render(turnstileEl, {
-            sitekey: config.siteKey,
-            appearance: 'interaction-only',
-            theme: 'dark',
-            callback: (token: string) => resolve(token),
-            'error-callback': () => reject(new Error('turnstile error')),
-            'timeout-callback': () => reject(new Error('turnstile timeout')),
-          });
-        });
-      })();
+      turnstilePromise = withTimeout(
+        acquireToken(),
+        TURNSTILE_TIMEOUT_MS,
+        // The caller keys off this prefix to pick the verification message.
+        'turnstile timeout',
+      );
 
       turnstilePromise.catch(() => {
+        pending = null;
         turnstilePromise = null;
       });
 
       return turnstilePromise;
     }
 
-    function resetTurnstile(): void {
+    async function acquireToken(): Promise<string> {
+      await loadTurnstileScript();
+      if (!window.turnstile) throw new Error('turnstile unavailable');
+
+      return new Promise<string>((resolve, reject) => {
+        pending = { resolve, reject };
+
+        if (turnstileWidgetId !== null) {
+          window.turnstile!.reset(turnstileWidgetId);
+          return;
+        }
+
+        const id = window.turnstile!.render(turnstileEl, {
+          sitekey: config.siteKey,
+          appearance: 'interaction-only',
+          theme: 'dark',
+          callback: (token: string) => {
+            const waiting = pending;
+            pending = null;
+            waiting?.resolve(token);
+          },
+          /* Tokens go stale after about five minutes. The inline panel warms
+             the widget on first focus, so a visitor who reads the page before
+             typing would otherwise send an expired token and be rejected.
+             Dropping the cached promise makes the next send acquire a fresh
+             one. Nothing is rejected here: no request is necessarily waiting. */
+          'expired-callback': () => {
+            if (!pending) turnstilePromise = null;
+          },
+          'error-callback': () => {
+            const waiting = pending;
+            pending = null;
+            waiting?.reject(new Error('turnstile error'));
+          },
+          'timeout-callback': () => {
+            const waiting = pending;
+            pending = null;
+            waiting?.reject(new Error('turnstile timeout'));
+          },
+        });
+
+        if (!id) {
+          pending = null;
+          reject(new Error('turnstile render refused'));
+          return;
+        }
+
+        turnstileWidgetId = id;
+      });
+    }
+
+    /** Drop the cached token. The widget itself is reused; see above. */
+    function invalidateToken(): void {
       turnstilePromise = null;
-      if (turnstileWidgetId && window.turnstile) window.turnstile.reset(turnstileWidgetId);
     }
 
     function setBusy(next: boolean): void {
@@ -745,13 +859,54 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
     }
 
     /**
-     * Trim to the server's cap, keeping the window opening on a user turn. A
+     * Trim to the server's caps, keeping the window opening on a user turn. A
      * transcript always ends on one, so an even-sized window over an odd-length
      * history would start on an assistant turn, which the provider rejects.
+     *
+     * Both caps have to be applied, because they measure different things and
+     * neither implies the other: MAX_MESSAGES counts turns, MAX_TOTAL_CHARS
+     * counts characters. Twenty turns is within the count cap at any length,
+     * and twenty maximum-length turns is 40k characters, well past the size the
+     * Worker will accept. Trimming on count alone means a long conversation
+     * gets rejected outright rather than degrading, which is the opposite of
+     * what limits.ts promises.
      */
     function trimHistory(turns: Turn[]): Turn[] {
-      const window_ = turns.slice(-config.limits.MAX_MESSAGES);
-      return window_[0]?.role === 'assistant' ? window_.slice(1) : window_;
+      let window_ = turns.slice(-config.limits.MAX_MESSAGES);
+      if (window_[0]?.role === 'assistant') window_ = window_.slice(1);
+
+      const size = (list: Turn[]) => list.reduce((total, t) => total + t.content.length, 0);
+
+      /* Drop from the front, oldest first, until it fits. Turns come off in
+         pairs so the window keeps opening on a user turn. The final turn is
+         the message just sent, so it is never dropped: a single turn cannot
+         exceed the total cap anyway, since MAX_MESSAGE_CHARS is far below it. */
+      while (window_.length > 1 && size(window_) > config.limits.MAX_TOTAL_CHARS) {
+        window_ = window_.slice(1);
+        if (window_[0]?.role === 'assistant') window_ = window_.slice(1);
+      }
+
+      return window_;
+    }
+
+    /**
+     * Mark a sent bubble as never having reached the Worker.
+     *
+     * The transcript and `history` are two records of the same conversation, so
+     * they drift apart at the first error: the failed turn is popped from
+     * history but its bubble stays on screen. The visitor then asks a follow-up
+     * about a message the model was never sent. Showing the failure keeps the
+     * two honest with each other.
+     */
+    function markUnsent(el: HTMLElement): void {
+      el.classList.add('bubble-failed');
+      const row = el.parentElement;
+      if (!row || row.querySelector('.unsent')) return;
+
+      const note = document.createElement('span');
+      note.className = 'unsent';
+      note.textContent = 'not sent';
+      row.appendChild(note);
     }
 
     async function submit(): Promise<void> {
@@ -764,11 +919,25 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
       input.value = '';
       input.style.height = 'auto';
       suggestionsEl.replaceChildren();
-      bubble('user', text);
+      const userBubble = bubble('user', text);
       history.push({ role: 'user', content: text });
 
       setBusy(true);
       const indicator = typingIndicator();
+
+      /* One controller for the whole exchange. It bounds the wait for the first
+         byte, then is re-armed as an idle timer over the stream, so a Worker
+         that accepts the request and then goes quiet cannot hold the composer
+         disabled indefinitely. */
+      const controller = new AbortController();
+      let timer: ReturnType<typeof setTimeout> | undefined = setTimeout(
+        () => controller.abort(),
+        REQUEST_TIMEOUT_MS,
+      );
+      const stopTimer = () => {
+        clearTimeout(timer);
+        timer = undefined;
+      };
 
       try {
         const payload: Record<string, unknown> = {
@@ -783,15 +952,19 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
+          signal: controller.signal,
         });
 
+        /* Cross-origin, so this is null unless the Worker names the header in
+           Access-Control-Expose-Headers. Without it every message spends a
+           fresh single-use Turnstile token and the second one is rejected. */
         const issued = response.headers.get('X-Chat-Session');
         if (issued) sessionToken = issued;
 
         if (!response.ok || !response.body) {
           if (response.status === 403) {
             sessionToken = null;
-            resetTurnstile();
+            invalidateToken();
           }
 
           let message = 'Something went wrong. Please try again.';
@@ -805,6 +978,7 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
           indicator.remove();
           bubble('system', message);
           history.pop();
+          markUnsent(userBubble);
           return;
         }
 
@@ -819,6 +993,12 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
         let buffer = '';
 
         while (true) {
+          /* Re-arm per chunk: the budget is on silence between chunks, not on
+             the length of the answer, so a long reply is never cut off for
+             being long. */
+          stopTimer();
+          timer = setTimeout(() => controller.abort(), STREAM_IDLE_TIMEOUT_MS);
+
           const { done, value } = await reader.read();
           if (done) break;
 
@@ -857,20 +1037,33 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
             bubble('system', 'No response was returned. Please try again.');
           }
           history.pop();
+          markUnsent(userBubble);
         } else {
           history.push({ role: 'assistant', content: answer });
           if (truncated) bubble('system', 'That answer was cut short. Try asking something narrower.');
         }
       } catch (error) {
         indicator.remove();
+
+        /* An abort is this component's own timeout firing, not a dead network,
+           so it gets its own message: the request may well have been fine and
+           simply slow, and "check your connection" would be misleading. */
+        const aborted = error instanceof DOMException && error.name === 'AbortError';
+        const verification = error instanceof Error && error.message.startsWith('turnstile');
+
         bubble(
           'system',
-          error instanceof Error && error.message.startsWith('turnstile')
-            ? 'Verification could not be completed. Please reload the page and try again.'
-            : 'Could not reach the assistant. Check your connection and try again.',
+          verification
+            ? 'Verification could not be completed. Please try again.'
+            : aborted
+              ? 'The assistant took too long to respond. Please try again.'
+              : 'Could not reach the assistant. Check your connection and try again.',
         );
+
         history.pop();
+        markUnsent(userBubble);
       } finally {
+        stopTimer();
         setBusy(false);
         input.focus();
       }
@@ -943,7 +1136,7 @@ const serializedConfig = JSON.stringify(clientConfig).replace(/</g, '\\u003c');
     for (const button of modeButtons) {
       button.addEventListener('click', () => {
         const next = button.dataset.mode;
-        if (!next || next === currentMode || busy) return;
+        if (!isMode(next) || next === currentMode || busy) return;
         currentMode = next;
         renderMode();
         input.focus();
