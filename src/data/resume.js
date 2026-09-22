@@ -13,7 +13,7 @@ export const SKILLS = [
     icon: 'server',
     tone: 'blue',
     items: [
-      'Windows 10/11 desktop administration',
+      'Windows 10/11 desktop administration and troubleshooting',
       'Active Directory fundamentals',
       'Azure Virtual Desktop & Windows 365',
       'Linux server administration (Raspberry Pi OS)',
@@ -116,7 +116,7 @@ export const PROJECTS = [
     tone: 'blue',
     icon: 'pulse',
     summary:
-      'Built and maintain GPU mining rigs: component selection, assembly, overclock and thermal tuning, uptime monitoring. Self-custody wallets with hardware wallet setup, seed phrase practices, and transaction verification. Run blockchain nodes and work with on-chain and DeFi applications.',
+      'Built and maintained GPU mining rigs: component selection, assembly, overclock and thermal tuning, uptime monitoring. Self-custody wallets with hardware wallet setup, seed phrase practices, and transaction verification. Operated blockchain nodes and worked with on-chain and DeFi applications.',
     tags: ['GPU rigs', 'Self-custody', 'Nodes', 'DeFi'],
   },
   {
@@ -175,17 +175,19 @@ export const EXPERIENCE = [
     tone: 'yellow',
     compact: true,
     bullets: [
-      'Self-managed schedule and route planning via mobile dispatch and navigation apps, with a safe, positive rider experience and direct customer and merchant communication to resolve delivery issues.',
+      'Picked up and dropped off passengers, creating a safe and positive rider experience.',
+      'Self-managed schedule and route planning via mobile dispatch and navigation apps.',
+      'Communicated directly with customers and merchants to resolve delivery issues.',
     ],
   },
   {
     company: 'Earlier',
-    role: 'Tops, Whole Foods Market, Guitar Center, Walker Electric, Mother’s Market, AppleOne placements, Target',
+    role: 'Tops, Whole Foods Market, Guitar Center, Walker Electric, Mother’s Market, Ocean Blue Detailing, Bean Investments, IsoTis OrthoBiologics, Unique Finds, AppleOne placements, Target',
     period: '2005 to 2018',
     tone: 'yellow',
     compact: true,
     bullets: [
-      'Client-facing service, retail, and warehouse roles: in-home consultation and product recommendations, inventory and order fulfillment against 15-minute ETA windows, high-accuracy cash handling with end-of-shift reporting, conveyor machine wiring as an electrician’s apprentice, plus assembly and light industrial work across temp placements. Full history on the résumé.',
+      'Client-facing service, retail, office, and warehouse roles: in-home consultation, order fulfillment against 15-minute ETA windows, accurate cash handling and end-of-shift reporting, eBay and web storefront support, conveyor machine wiring, clean room support, and assembly work across temp placements. Full history on the résumé.',
     ],
   },
 ];
