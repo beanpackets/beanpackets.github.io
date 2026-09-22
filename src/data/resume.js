@@ -52,8 +52,9 @@ export const SKILLS = [
     icon: 'tools',
     tone: 'accent',
     items: [
+      'GitHub Issues ticketing (adaptable to Zendesk, ServiceNow)',
       'Salesforce CRM config and automation',
-      'GitHub Issues, Git version control',
+      'Git version control',
       'Docker, Uptime Kuma, Homarr',
       'Google Workspace',
       'join.me',
@@ -67,10 +68,10 @@ export const SKILLS = [
     items: [
       'Help desk and ticketing operations',
       'User provisioning, deactivation, permissions',
+      'Onboarding and offboarding support',
       'Troubleshooting and escalation',
       'SLA management',
-      'Bug reproduction and documentation',
-      'System and status monitoring',
+      'Printer and peripheral setup',
       'Client communication',
     ],
   },
@@ -115,7 +116,7 @@ export const PROJECTS = [
     tone: 'blue',
     icon: 'pulse',
     summary:
-      'Built and maintain GPU mining rigs: component selection, assembly, overclock and thermal tuning, uptime monitoring. Self-custody wallets with hardware wallet setup, seed phrase practices, and transaction verification. Run blockchain nodes and work with on-chain and DeFi applications, alongside active trading, portfolio tracking, and market research.',
+      'Built and maintain GPU mining rigs: component selection, assembly, overclock and thermal tuning, uptime monitoring. Self-custody wallets with hardware wallet setup, seed phrase practices, and transaction verification. Run blockchain nodes and work with on-chain and DeFi applications.',
     tags: ['GPU rigs', 'Self-custody', 'Nodes', 'DeFi'],
   },
   {
@@ -140,11 +141,11 @@ export const EXPERIENCE = [
     current: true,
     bullets: [
       'First point of contact for support tickets, emails, chats, and calls covering the company website and SaaS applications.',
-      'Triage, log, and prioritize tickets in GitHub Issues, keeping response and resolution times within SLA.',
+      'Triage, log, and prioritize incoming tickets by urgency and impact, and track them against SLA to keep response and resolution times on target.',
       'Troubleshoot login, account, permissions, and connectivity issues across web and SaaS platforms, including SSO and password resets.',
       'Reproduce reported bugs with detailed steps, then escalate past Tier 1 to engineering with clear documentation.',
       'Monitor status dashboards and communicate known outages proactively before the tickets arrive.',
-      'Write and maintain knowledge base articles and troubleshooting guides, and flag recurring ticket patterns so repeat issues get a permanent fix instead of a repeat ticket.',
+      'Write and maintain knowledge base articles and troubleshooting guides, and flag recurring ticket patterns to the team so the root cause gets fixed.',
     ],
   },
   {
@@ -154,8 +155,8 @@ export const EXPERIENCE = [
     period: 'Jan 2019 to Oct 2025',
     tone: 'blue',
     bullets: [
+      'Managed Salesforce user accounts: created and deactivated users, reset access, and assigned profiles and permission sets as agents onboarded and departed.',
       'Administered the Salesforce CRM platform: custom fields, automated actions, and agent data records.',
-      'Managed Salesforce user accounts end to end: created and deactivated users, reset access, and assigned profiles and permission sets as agents onboarded and departed.',
       'Managed the full insurance agent licensing and credentialing lifecycle from submission through carrier approval, monitoring and renewing licensing to keep producers contract-ready.',
       'Diagnosed and resolved platform issues, escalating complex matters to Salesforce support and coordinating resolution.',
       'Audited agent records for compliance with evolving carrier requirements, and led internal meetings over join.me on platform and procedural changes.',
@@ -203,6 +204,13 @@ export const CERTIFICATIONS = [
     status: 'complete',
     tone: 'blue',
     detail: 'Microsoft Learn',
+  },
+  {
+    name: 'AI Fluency: Framework & Foundations',
+    status: 'complete',
+    tone: 'green',
+    wide: true,
+    detail: 'Anthropic',
   },
 ];
 
