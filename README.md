@@ -49,7 +49,9 @@ scripts/           social card generation
 
 ### Rebuilding the resume PDF
 
-`public/Matthew_Bean_Resume.pdf` is generated from `resume-src/resume.tex`:
+`resume-src/resume.tex` holds the resume content. The published
+`public/Matthew_Bean_Resume.pdf` is currently Matthew's own export of the same
+content; to publish a LaTeX build instead:
 
 ```bash
 cd resume-src && pdflatex -interaction=nonstopmode resume.tex

@@ -19,7 +19,7 @@ export const SITE = {
   email: 'bean.packets@gmail.com',
   /* Bump ?v= whenever the PDF changes, so no browser or CDN cache serves the
      old copy under the same URL. */
-  resumeFile: '/Matthew_Bean_Resume.pdf?v=2026-09-22',
+  resumeFile: '/Matthew_Bean_Resume.pdf?v=2026-09-22b',
 };
 
 export const LINKS = {
