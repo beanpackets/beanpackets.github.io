@@ -2,9 +2,9 @@
    No phone number, no ZIP. See site.js. */
 
 export const ABOUT = [
-  `I run help desk operations for a SaaS company. First contact for tickets, emails, chats, calls. Most days that means triaging in GitHub Issues, untangling login and permissions problems, reproducing bugs properly, and knowing when something is mine to fix and when it needs Tier 2.`,
-  `Before that, six years as a technical support specialist and executive administrator on a Salesforce CRM: custom fields, automated actions, agent records, and user accounts end to end, from provisioning and permission sets through deactivation. The whole licensing and credentialing lifecycle ran on top of it.`,
-  `I'm studying for the CCNA and I run a home lab: a Raspberry Pi 4 on Linux with a static IP, serving Docker containers. Pi-hole filters DNS, Tailscale handles remote access, Uptime Kuma watches availability, and when something looks wrong I capture the traffic with tshark and read it. Enough PC builds and component-level repairs that boot/POST troubleshooting is muscle memory. San Diego, available full-time, on-site.`,
+  `I run help desk operations for a SaaS company. First contact for tickets, emails, chats, calls. Most days that means triaging by urgency and impact against SLA, untangling login and permissions problems, reproducing bugs properly, and knowing when something is mine to fix at Tier 1 and when it needs Tier 2.`,
+  `Before that, six years as a technical support specialist and executive administrator on a Salesforce CRM, covering the full user account lifecycle: provisioning, permission sets, onboarding and offboarding, deactivation. Custom fields, automated actions, and agent records too, with the whole licensing and credentialing lifecycle running on top of it.`,
+  `I've completed Microsoft Learn training in Active Directory Domain Services, Intune, and Azure Virtual Desktop, and I'm studying for the CCNA. At home I run a lab: a Raspberry Pi 4 on Linux with a static IP, serving Docker containers. Pi-hole filters DNS, Tailscale handles remote access, Uptime Kuma watches availability, and when something looks wrong I capture the traffic with tshark and read it. Enough PC builds and component-level repairs that boot/POST troubleshooting is muscle memory. Dependable, detail-oriented, comfortable working independently. San Diego, available full-time, on-site.`,
 ];
 
 export const SKILLS = [
@@ -143,8 +143,10 @@ export const EXPERIENCE = [
       'First point of contact for support tickets, emails, chats, and calls covering the company website and SaaS applications.',
       'Triage, log, and prioritize incoming tickets by urgency and impact, and track them against SLA to keep response and resolution times on target.',
       'Troubleshoot login, account, permissions, and connectivity issues across web and SaaS platforms, including SSO and password resets.',
-      'Reproduce reported bugs with detailed steps, then escalate past Tier 1 to engineering with clear documentation.',
-      'Monitor status dashboards and communicate known outages proactively before the tickets arrive.',
+      'Resolve access issues remotely by walking non-technical users through browser, cache, cookie, and network steps, closing them at Tier 1 rather than escalating.',
+      'Diagnose website issues (broken links, page errors, form failures, slow load times) and support SaaS functionality, configuration, and integration problems.',
+      'Reproduce reported bugs and write detailed steps-to-reproduce; escalate anything beyond Tier 1 to Tier 2/3, engineering, or product with clear documentation.',
+      'Monitor system status dashboards and proactively communicate known outages or incidents to users.',
       'Write and maintain knowledge base articles and troubleshooting guides, and flag recurring ticket patterns to the team so the root cause gets fixed.',
     ],
   },
@@ -156,20 +158,34 @@ export const EXPERIENCE = [
     tone: 'blue',
     bullets: [
       'Managed Salesforce user accounts: created and deactivated users, reset access, and assigned profiles and permission sets as agents onboarded and departed.',
-      'Administered the Salesforce CRM platform: custom fields, automated actions, and agent data records.',
-      'Managed the full insurance agent licensing and credentialing lifecycle from submission through carrier approval, monitoring and renewing licensing to keep producers contract-ready.',
-      'Diagnosed and resolved platform issues, escalating complex matters to Salesforce support and coordinating resolution.',
-      'Audited agent records for compliance with evolving carrier requirements, and led internal meetings over join.me on platform and procedural changes.',
+      'Served as executive administrator for agent operations, owning agent paperwork from intake through validation, filing, and record retention.',
+      'Administered the company Salesforce org: created and modified custom fields, built automated actions, and maintained data quality across agent records.',
+      'Monitored and renewed agent licensing to keep producers eligible and contract-ready for new carrier appointments.',
+      'Managed the full insurance agent licensing and credentialing lifecycle: collecting, validating, and tracking carrier-required documentation from submission through approval.',
+      'Identified, diagnosed, and resolved platform issues; escalated complex technical matters to Salesforce support and coordinated resolution with internal stakeholders.',
+      'Audited agent records against changing carrier requirements each cycle, correcting data errors before they could block a carrier appointment.',
+      'Facilitated and led internal meetings via join.me to communicate platform updates, procedural changes, and carrier requirements to agents.',
+      'Primary support contact for the agent network, resolving Salesforce access, record, and licensing issues by phone and email.',
+    ],
+  },
+  {
+    company: 'Uber / DoorDash',
+    role: 'Independent Contractor',
+    period: '2016 to now',
+    tone: 'yellow',
+    compact: true,
+    bullets: [
+      'Self-managed schedule and route planning via mobile dispatch and navigation apps, with a safe, positive rider experience and direct customer and merchant communication to resolve delivery issues.',
     ],
   },
   {
     company: 'Earlier',
-    role: 'Tops, Whole Foods Market, Guitar Center, Mother’s Market, AppleOne placements',
-    period: '2005 to 2019',
+    role: 'Tops, Whole Foods Market, Guitar Center, Walker Electric, Mother’s Market, AppleOne placements, Target',
+    period: '2005 to 2018',
     tone: 'yellow',
     compact: true,
     bullets: [
-      'Client-facing service, retail, and warehouse roles: in-home consultation and product recommendations, inventory and order fulfillment against 15-minute ETA windows, high-accuracy cash handling with end-of-shift reporting, plus assembly and light industrial work across temp placements. Full history on the résumé.',
+      'Client-facing service, retail, and warehouse roles: in-home consultation and product recommendations, inventory and order fulfillment against 15-minute ETA windows, high-accuracy cash handling with end-of-shift reporting, conveyor machine wiring as an electrician’s apprentice, plus assembly and light industrial work across temp placements. Full history on the résumé.',
     ],
   },
 ];

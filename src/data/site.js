@@ -11,13 +11,15 @@ export const SITE = {
   location: 'San Diego, CA',
   availability: 'Available full-time, on-site',
   description:
-    'IT support professional in San Diego running help desk operations, administering cloud CRM platforms, and troubleshooting hardware, account, and connectivity issues. CCNA in progress.',
+    'Help desk technician in San Diego with hands-on experience across the full user account lifecycle, ticket triage against SLA, and Windows desktop, printer, and hardware troubleshooting. Microsoft Learn trained in Active Directory, Intune, and Azure Virtual Desktop. CCNA in progress.',
   githubUser: 'beanpackets',
   /* Separate from githubUser. These used to be the same word, so labels were
      built from whichever was handy; they are not the same word any more. */
   linkedinUser: 'matthewgsbean',
   email: 'bean.packets@gmail.com',
-  resumeFile: '/Matthew_Bean_Resume.pdf',
+  /* Bump ?v= whenever the PDF changes, so no browser or CDN cache serves the
+     old copy under the same URL. */
+  resumeFile: '/Matthew_Bean_Resume.pdf?v=2026-09-22',
 };
 
 export const LINKS = {
